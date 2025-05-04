@@ -1,0 +1,17 @@
+
+import React from 'react';
+import WorkersManagement from '@/components/WorkersManagement';
+import { MillProvider } from '@/context/MillContext';
+import Layout from '@/components/Layout';
+
+const WorkersPage = () => {
+  return (
+    <MillProvider>
+      <Layout>
+        <WorkersManagement />
+      </Layout>
+    </MillProvider>
+  );
+};
+
+export default WorkersPage;

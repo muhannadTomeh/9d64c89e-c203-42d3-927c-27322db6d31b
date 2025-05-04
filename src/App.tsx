@@ -8,6 +8,9 @@ import Index from "./pages/Index";
 import QueuePage from "./pages/QueuePage";
 import InvoicesPage from "./pages/InvoicesPage";
 import CustomersPage from "./pages/CustomersPage";
+import WorkersPage from "./pages/WorkersPage";
+import TradingPage from "./pages/TradingPage";
+import ExpensesPage from "./pages/ExpensesPage";
 import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
 
@@ -24,6 +27,9 @@ const App = () => (
           <Route path="/queue" element={<QueuePage />} />
           <Route path="/invoices" element={<InvoicesPage />} />
           <Route path="/customers" element={<CustomersPage />} />
+          <Route path="/workers" element={<WorkersPage />} />
+          <Route path="/trading" element={<TradingPage />} />
+          <Route path="/expenses" element={<ExpensesPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

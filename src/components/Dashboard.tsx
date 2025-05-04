@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useMillContext } from '@/context/MillContext';
 
 const Dashboard: React.FC = () => {
-  const { settings, customers, invoices } = useMillContext();
+  const { settings, customers, invoices, getStatistics } = useMillContext();
   
   // Get queue customers (pending status)
   const queueCustomers = customers.filter((c) => c.status === 'pending');
@@ -39,6 +39,9 @@ const Dashboard: React.FC = () => {
 
   const totalCustomersCount = customers.length;
   
+  // Get overall statistics
+  const stats = getStatistics();
+  
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -51,6 +54,50 @@ const Dashboard: React.FC = () => {
             day: 'numeric',
           })}
         </p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <Card className="bg-primary text-white">
+          <CardContent className="p-4 text-center">
+            <h3 className="text-lg font-bold mb-2">الزبائن في الطابور</h3>
+            <p className="text-3xl font-bold">{queueCustomers.length}</p>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-olive-600 text-white">
+          <CardContent className="p-4 text-center">
+            <h3 className="text-lg font-bold mb-2">زيت اليوم</h3>
+            <p className="text-3xl font-bold">{todayOilTotal.toFixed(2)} كغم</p>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-sand-600 text-white">
+          <CardContent className="p-4 text-center">
+            <h3 className="text-lg font-bold mb-2">الزيت الكلي</h3>
+            <p className="text-3xl font-bold">{stats.totalOilProduced.toFixed(2)} كغم</p>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-green-600 text-white">
+          <CardContent className="p-4 text-center">
+            <h3 className="text-lg font-bold mb-2">المخزون الحالي</h3>
+            <p className="text-3xl font-bold">{stats.currentOilStock.toFixed(2)} كغم</p>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-blue-600 text-white">
+          <CardContent className="p-4 text-center">
+            <h3 className="text-lg font-bold mb-2">الكاش الحالي</h3>
+            <p className="text-3xl font-bold">{stats.currentCash.toFixed(2)} ₪</p>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-red-600 text-white">
+          <CardContent className="p-4 text-center">
+            <h3 className="text-lg font-bold mb-2">إجمالي المصاريف</h3>
+            <p className="text-3xl font-bold">{stats.totalExpenses.toFixed(2)} ₪</p>
+          </CardContent>
+        </Card>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -150,6 +197,32 @@ const Dashboard: React.FC = () => {
         >
           <h3 className="text-xl font-bold mb-2">سجل الزبائن</h3>
           <p>عرض سجل الزبائن وتفاصيل المعاملات السابقة</p>
+        </Link>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Link 
+          to="/workers"
+          className="bg-blue-600 hover:bg-blue-700 text-white p-8 rounded-lg text-center shadow-md transition-transform hover:scale-105"
+        >
+          <h3 className="text-xl font-bold mb-2">إدارة العمال</h3>
+          <p>تسجيل العمال وحساب أجورهم ودفعاتهم</p>
+        </Link>
+        
+        <Link 
+          to="/trading"
+          className="bg-green-600 hover:bg-green-700 text-white p-8 rounded-lg text-center shadow-md transition-transform hover:scale-105"
+        >
+          <h3 className="text-xl font-bold mb-2">بيع وشراء الزيت</h3>
+          <p>إدارة عمليات البيع والشراء ومتابعة المخزون</p>
+        </Link>
+        
+        <Link 
+          to="/expenses"
+          className="bg-red-600 hover:bg-red-700 text-white p-8 rounded-lg text-center shadow-md transition-transform hover:scale-105"
+        >
+          <h3 className="text-xl font-bold mb-2">المصاريف اليومية</h3>
+          <p>تسجيل وتتبع المصاريف اليومية للمعصرة</p>
         </Link>
       </div>
     </div>

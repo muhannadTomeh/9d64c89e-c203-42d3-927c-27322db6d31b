@@ -30,6 +30,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     { path: '/queue', label: 'إدارة الطابور' },
     { path: '/invoices', label: 'حساب الرد' },
     { path: '/customers', label: 'سجل الزبائن' },
+    { path: '/workers', label: 'العمال' },
+    { path: '/trading', label: 'بيع وشراء الزيت' },
+    { path: '/expenses', label: 'المصاريف' },
     { path: '/settings', label: 'الإعدادات' },
   ];
 
@@ -41,7 +44,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       </header>
       
       {/* Navigation */}
-      <nav className="grid grid-cols-1 md:grid-cols-5 gap-0">
+      <nav className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-0">
         {navItems.map((item) => (
           <NavItem
             key={item.path}
