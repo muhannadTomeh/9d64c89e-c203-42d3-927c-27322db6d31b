@@ -1,17 +1,17 @@
 
 import React from 'react';
-import Dashboard from '@/components/Dashboard';
+import QueueManagement from '@/components/QueueManagement';
 import { MillProvider } from '@/context/MillContext';
 import Layout from '@/components/Layout';
 
-const Index = () => {
+const QueuePage = () => {
   return (
     <MillProvider>
       <Layout>
-        <Dashboard />
+        <QueueManagement />
       </Layout>
     </MillProvider>
   );
 };
 
-export default Index;
+export default QueuePage;

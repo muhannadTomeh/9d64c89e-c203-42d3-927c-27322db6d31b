@@ -1,17 +1,17 @@
 
 import React from 'react';
-import Dashboard from '@/components/Dashboard';
+import InvoiceCalculator from '@/components/InvoiceCalculator';
 import { MillProvider } from '@/context/MillContext';
 import Layout from '@/components/Layout';
 
-const Index = () => {
+const InvoicesPage = () => {
   return (
     <MillProvider>
       <Layout>
-        <Dashboard />
+        <InvoiceCalculator />
       </Layout>
     </MillProvider>
   );
 };
 
-export default Index;
+export default InvoicesPage;

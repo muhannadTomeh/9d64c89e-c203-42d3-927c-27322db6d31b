@@ -1,17 +1,17 @@
 
 import React from 'react';
-import Dashboard from '@/components/Dashboard';
+import CustomersHistory from '@/components/CustomersHistory';
 import { MillProvider } from '@/context/MillContext';
 import Layout from '@/components/Layout';
 
-const Index = () => {
+const CustomersPage = () => {
   return (
     <MillProvider>
       <Layout>
-        <Dashboard />
+        <CustomersHistory />
       </Layout>
     </MillProvider>
   );
 };
 
-export default Index;
+export default CustomersPage;

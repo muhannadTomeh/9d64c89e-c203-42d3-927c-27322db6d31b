@@ -1,17 +1,17 @@
 
 import React from 'react';
-import Dashboard from '@/components/Dashboard';
+import Settings from '@/components/Settings';
 import { MillProvider } from '@/context/MillContext';
 import Layout from '@/components/Layout';
 
-const Index = () => {
+const SettingsPage = () => {
   return (
     <MillProvider>
       <Layout>
-        <Dashboard />
+        <Settings />
       </Layout>
     </MillProvider>
   );
 };
 
-export default Index;
+export default SettingsPage;
