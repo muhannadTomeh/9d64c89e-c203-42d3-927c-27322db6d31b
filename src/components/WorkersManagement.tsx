@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { Search, Plus, Edit, DollarSign, Printer } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
 const WorkersManagement: React.FC = () => {
   const {
     workers,
@@ -234,13 +235,13 @@ const WorkersManagement: React.FC = () => {
           
           {/* Add Worker Form */}
           <Card>
-            <CardHeader className="bg-green-600 text-white font-bold pb-2\ntext-right\n">
-              <h3 className="text-lg\ntext-right">إضافة عامل جديد</h3>
+            <CardHeader className="bg-green-600 text-white font-bold pb-2 text-right">
+              <h3 className="text-lg">إضافة عامل جديد</h3>
             </CardHeader>
             <CardContent className="pt-4">
               <form onSubmit={handleAddWorker} className="space-y-4 text-right">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="<html dir=\"rtl\">\n">اسم العامل الكامل</Label>
+                  <Label htmlFor="name" className="text-right">اسم العامل الكامل</Label>
                   <Input id="name" value={name} onChange={e => setName(e.target.value)} placeholder="أدخل اسم العامل" className="text-right" />
                 </div>
                 
@@ -455,4 +456,5 @@ const WorkersManagement: React.FC = () => {
       </Tabs>
     </div>;
 };
+
 export default WorkersManagement;
