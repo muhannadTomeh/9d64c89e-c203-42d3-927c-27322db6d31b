@@ -37,7 +37,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
+    <div className="flex flex-col min-h-screen bg-gray-100 rtl">
       {/* Header */}
       <header className="bg-sidebar py-4 text-white text-center">
         <h1 className="text-2xl font-bold">إدارة المعصرة</h1>
