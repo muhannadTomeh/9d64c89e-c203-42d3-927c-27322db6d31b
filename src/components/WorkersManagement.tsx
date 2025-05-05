@@ -234,19 +234,19 @@ const WorkersManagement: React.FC = () => {
           
           {/* Add Worker Form */}
           <Card>
-            <CardHeader className="bg-green-600 text-white font-bold pb-2">
-              <h3 className="text-lg">إضافة عامل جديد</h3>
+            <CardHeader className="bg-green-600 text-white font-bold pb-2\ntext-right\n">
+              <h3 className="text-lg\ntext-right">إضافة عامل جديد</h3>
             </CardHeader>
             <CardContent className="pt-4">
-              <form onSubmit={handleAddWorker} className="space-y-4">
+              <form onSubmit={handleAddWorker} className="space-y-4 text-right">
                 <div className="space-y-2">
-                  <Label htmlFor="name">اسم العامل الكامل</Label>
-                  <Input id="name" value={name} onChange={e => setName(e.target.value)} placeholder="أدخل اسم العامل" />
+                  <Label htmlFor="name" className="<html dir=\"rtl\">\n">اسم العامل الكامل</Label>
+                  <Input id="name" value={name} onChange={e => setName(e.target.value)} placeholder="أدخل اسم العامل" className="text-right" />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="phoneNumber">رقم الهاتف (اختياري)</Label>
-                  <Input id="phoneNumber" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} placeholder="أدخل رقم الهاتف" />
+                  <Input id="phoneNumber" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} placeholder="أدخل رقم الهاتف" className="text-right" />
                 </div>
                 
                 <div className="space-y-2">
