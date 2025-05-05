@@ -9,6 +9,7 @@ import QueuePage from "./pages/QueuePage";
 import InvoicesPage from "./pages/InvoicesPage";
 import CustomersPage from "./pages/CustomersPage";
 import WorkersPage from "./pages/WorkersPage";
+import WorkerDetailPage from "./pages/WorkerDetailPage";
 import TradingPage from "./pages/TradingPage";
 import ExpensesPage from "./pages/ExpensesPage";
 import SettingsPage from "./pages/SettingsPage";
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/invoices" element={<InvoicesPage />} />
           <Route path="/customers" element={<CustomersPage />} />
           <Route path="/workers" element={<WorkersPage />} />
+          <Route path="/workers/:workerId" element={<WorkerDetailPage />} />
           <Route path="/trading" element={<TradingPage />} />
           <Route path="/expenses" element={<ExpensesPage />} />
           <Route path="/settings" element={<SettingsPage />} />

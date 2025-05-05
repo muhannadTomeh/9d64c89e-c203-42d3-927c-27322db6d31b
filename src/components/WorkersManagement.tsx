@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,10 +10,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useMillContext } from '@/context/MillContext';
 import { Worker, WorkerShift, WorkerPayment, WorkerType } from '@/types';
 import { toast } from 'sonner';
+import { Search, Plus, Edit, DollarSign, Printer } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const WorkersManagement: React.FC = () => {
   const { workers, addWorker, workerShifts, addWorkerShift, workerPayments, addWorkerPayment } = useMillContext();
   
+  const [searchQuery, setSearchQuery] = useState('');
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [workerType, setWorkerType] = useState<WorkerType>('hourly');
@@ -158,6 +162,18 @@ const WorkersManagement: React.FC = () => {
     return workerShiftTotal - workerPaymentTotal;
   };
   
+  const getWorkerPaidAmount = (workerId: string) => {
+    return workerPayments
+      .filter(payment => payment.workerId === workerId)
+      .reduce((sum, payment) => sum + payment.amount, 0);
+  };
+  
+  const getWorkerTotalDue = (workerId: string) => {
+    return workerShifts
+      .filter(shift => shift.workerId === workerId)
+      .reduce((sum, shift) => sum + shift.amount, 0);
+  };
+  
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('ar-EG', {
       year: 'numeric',
@@ -165,6 +181,10 @@ const WorkersManagement: React.FC = () => {
       day: 'numeric',
     });
   };
+  
+  const filteredWorkers = workers.filter(worker => 
+    worker.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   
   return (
     <div className="space-y-6">
@@ -179,148 +199,176 @@ const WorkersManagement: React.FC = () => {
         
         {/* Workers Tab */}
         <TabsContent value="workers" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Add Worker Form */}
-            <Card className="md:col-span-1">
-              <CardHeader className="bg-primary text-white font-bold pb-2">
-                <h3 className="text-lg">إضافة عامل جديد</h3>
-              </CardHeader>
-              <CardContent className="pt-4">
-                <form onSubmit={handleAddWorker} className="space-y-4">
+          {/* Search and Add Worker Button */}
+          <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:space-y-0">
+            <div className="relative w-full md:w-1/3">
+              <Search className="absolute left-2 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                className="pl-8 text-right"
+                placeholder="بحث عن اسم العامل..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <Button className="bg-green-600 hover:bg-green-700" onClick={() => {
+              setName('');
+              setPhoneNumber('');
+              setWorkerType('hourly');
+              setHourlyRate(0);
+              setShiftRate(0);
+              setNotes('');
+            }}>
+              <Plus className="ml-2 h-4 w-4" />
+              إضافة عامل جديد
+            </Button>
+          </div>
+          
+          {/* Workers Table */}
+          <Card>
+            <CardHeader className="bg-blue-600 text-white font-bold pb-2">
+              <h3 className="text-lg">قائمة العمال ({filteredWorkers.length})</h3>
+            </CardHeader>
+            <CardContent className="p-0">
+              {filteredWorkers.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <p>لا يوجد عمال حالياً</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-right">الاسم</TableHead>
+                        <TableHead className="text-right">نوع العامل</TableHead>
+                        <TableHead className="text-right">الراتب الكلي المستحق</TableHead>
+                        <TableHead className="text-right">الراتب المدفوع</TableHead>
+                        <TableHead className="text-right">المتبقي</TableHead>
+                        <TableHead className="text-right">التفاصيل</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredWorkers.map((worker) => {
+                        const totalDue = getWorkerTotalDue(worker.id);
+                        const totalPaid = getWorkerPaidAmount(worker.id);
+                        const balance = getWorkerBalance(worker.id);
+                        
+                        return (
+                          <TableRow key={worker.id}>
+                            <TableCell className="font-medium">{worker.name}</TableCell>
+                            <TableCell>
+                              {worker.type === 'hourly' ? 'بالساعة' : 'بالشفت'}
+                            </TableCell>
+                            <TableCell>{totalDue} شيكل</TableCell>
+                            <TableCell>{totalPaid} شيكل</TableCell>
+                            <TableCell className={balance > 0 ? 'text-red-600 font-semibold' : 'text-green-600'}>
+                              {balance} شيكل
+                            </TableCell>
+                            <TableCell>
+                              <Link to={`/workers/${worker.id}`}>
+                                <Button variant="outline" size="sm" className="flex items-center">
+                                  <Edit className="mr-1 h-4 w-4" />
+                                  تفاصيل
+                                </Button>
+                              </Link>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          
+          {/* Add Worker Form */}
+          <Card>
+            <CardHeader className="bg-green-600 text-white font-bold pb-2">
+              <h3 className="text-lg">إضافة عامل جديد</h3>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <form onSubmit={handleAddWorker} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">اسم العامل الكامل</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="أدخل اسم العامل"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="phoneNumber">رقم الهاتف (اختياري)</Label>
+                  <Input
+                    id="phoneNumber"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    placeholder="أدخل رقم الهاتف"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="workerType">نوع العامل</Label>
+                  <Select
+                    value={workerType}
+                    onValueChange={(value: WorkerType) => setWorkerType(value)}
+                  >
+                    <SelectTrigger id="workerType">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="hourly">عامل بالساعة</SelectItem>
+                      <SelectItem value="shift">عامل بالشفت</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {workerType === 'hourly' && (
                   <div className="space-y-2">
-                    <Label htmlFor="name">اسم العامل</Label>
+                    <Label htmlFor="hourlyRate">أجر الساعة (شيكل)</Label>
                     <Input
-                      id="name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="أدخل اسم العامل"
+                      id="hourlyRate"
+                      type="number"
+                      min="1"
+                      value={hourlyRate || ''}
+                      onChange={(e) => setHourlyRate(Number(e.target.value))}
+                      placeholder="أدخل أجر الساعة"
                     />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="phoneNumber">رقم الهاتف (اختياري)</Label>
-                    <Input
-                      id="phoneNumber"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      placeholder="أدخل رقم الهاتف"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="workerType">نوع العامل</Label>
-                    <Select
-                      value={workerType}
-                      onValueChange={(value: WorkerType) => setWorkerType(value)}
-                    >
-                      <SelectTrigger id="workerType">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="hourly">عامل بالساعة</SelectItem>
-                        <SelectItem value="shift">عامل بالشفت</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  {workerType === 'hourly' && (
-                    <div className="space-y-2">
-                      <Label htmlFor="hourlyRate">أجر الساعة (شيكل)</Label>
-                      <Input
-                        id="hourlyRate"
-                        type="number"
-                        min="1"
-                        value={hourlyRate || ''}
-                        onChange={(e) => setHourlyRate(Number(e.target.value))}
-                        placeholder="أدخل أجر الساعة"
-                      />
-                    </div>
-                  )}
-                  
-                  {workerType === 'shift' && (
-                    <div className="space-y-2">
-                      <Label htmlFor="shiftRate">أجر الشفت (شيكل)</Label>
-                      <Input
-                        id="shiftRate"
-                        type="number"
-                        min="1"
-                        value={shiftRate || ''}
-                        onChange={(e) => setShiftRate(Number(e.target.value))}
-                        placeholder="أدخل أجر الشفت"
-                      />
-                    </div>
-                  )}
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="notes">ملاحظات (اختياري)</Label>
-                    <Textarea
-                      id="notes"
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      placeholder="أدخل أي ملاحظات إضافية"
-                      rows={3}
-                    />
-                  </div>
-                  
-                  <Button type="submit" className="w-full">إضافة عامل</Button>
-                </form>
-              </CardContent>
-            </Card>
-            
-            {/* Workers List */}
-            <Card className="md:col-span-2">
-              <CardHeader className="bg-blue-600 text-white font-bold pb-2">
-                <h3 className="text-lg">قائمة العمال ({workers.length})</h3>
-              </CardHeader>
-              <CardContent className="max-h-[500px] overflow-y-auto">
-                {workers.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <p>لا يوجد عمال حالياً</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {workers.map((worker) => (
-                      <Card key={worker.id} className="border border-gray-200">
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-center mb-2">
-                            <h4 className="font-bold text-lg">{worker.name}</h4>
-                            <span className="text-sm text-gray-500">
-                              {worker.type === 'hourly' ? 'عامل بالساعة' : 'عامل بالشفت'}
-                            </span>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2 text-sm">
-                            {worker.phoneNumber && (
-                              <div>
-                                <span className="font-semibold">الهاتف:</span> {worker.phoneNumber}
-                              </div>
-                            )}
-                            {worker.type === 'hourly' && (
-                              <div>
-                                <span className="font-semibold">أجر الساعة:</span> {worker.hourlyRate} شيكل
-                              </div>
-                            )}
-                            {worker.type === 'shift' && (
-                              <div>
-                                <span className="font-semibold">أجر الشفت:</span> {worker.shiftRate} شيكل
-                              </div>
-                            )}
-                            <div className="col-span-2">
-                              <span className="font-semibold">الرصيد المستحق:</span> {getWorkerBalance(worker.id)} شيكل
-                            </div>
-                          </div>
-                          {worker.notes && (
-                            <div className="mt-2 text-sm bg-gray-50 p-2 rounded">
-                              <span className="font-semibold">ملاحظات:</span> {worker.notes}
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </div>
+                
+                {workerType === 'shift' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="shiftRate">أجر الشفت (شيكل)</Label>
+                    <Input
+                      id="shiftRate"
+                      type="number"
+                      min="1"
+                      value={shiftRate || ''}
+                      onChange={(e) => setShiftRate(Number(e.target.value))}
+                      placeholder="أدخل أجر الشفت"
+                    />
+                  </div>
+                )}
+                
+                <div className="space-y-2">
+                  <Label htmlFor="notes">ملاحظات (اختياري)</Label>
+                  <Textarea
+                    id="notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="أدخل أي ملاحظات إضافية"
+                    rows={3}
+                  />
+                </div>
+                
+                <Button type="submit" className="w-full bg-green-600 hover:bg-green-700">
+                  حفظ العامل
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
         </TabsContent>
         
         {/* Shifts Tab */}
