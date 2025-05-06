@@ -8,7 +8,9 @@ const CustomersPage = () => {
   return (
     <MillProvider>
       <Layout>
-        <CustomersHistory />
+        <div className="rtl">
+          <CustomersHistory />
+        </div>
       </Layout>
     </MillProvider>
   );

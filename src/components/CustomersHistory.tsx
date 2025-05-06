@@ -1,20 +1,22 @@
 
 import React, { useState } from 'react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useMillContext } from '@/context/MillContext';
 import { Invoice } from '@/types';
+import { ChevronRight, FileText } from 'lucide-react';
 
 const CustomerInvoiceDetails: React.FC<{ invoice: Invoice }> = ({ invoice }) => {
   const date = new Date(invoice.date);
   
   return (
-    <Card className="mb-4 border border-gray-200">
+    <Card className="mb-4 border border-olive-200">
       <CardContent className="p-4">
         <div className="flex justify-between items-center mb-2">
           <h4 className="font-bold">فاتورة رقم: {invoice.id.split('-')[1]}</h4>
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-olive-600">
             {date.toLocaleDateString('ar-EG')} {date.toLocaleTimeString('ar-EG', {
               hour: '2-digit',
               minute: '2-digit',
@@ -32,7 +34,7 @@ const CustomerInvoiceDetails: React.FC<{ invoice: Invoice }> = ({ invoice }) => 
           </div>
         </div>
         
-        <div className="text-sm bg-gray-50 p-3 rounded mb-2">
+        <div className="text-sm bg-olive-50 p-3 rounded mb-2">
           <h5 className="font-semibold mb-1">تفاصيل الدفع:</h5>
           {invoice.paymentMethod === 'oil' && (
             <>
@@ -88,6 +90,7 @@ const CustomerInvoiceDetails: React.FC<{ invoice: Invoice }> = ({ invoice }) => 
 const CustomersHistory: React.FC = () => {
   const { invoices } = useMillContext();
   const [searchTerm, setSearchTerm] = useState('');
+  const [expandedCustomerId, setExpandedCustomerId] = useState<string | null>(null);
   
   // Get unique customer IDs
   const uniqueCustomerIds = [...new Set(invoices.map(invoice => invoice.customerId))];
@@ -100,7 +103,7 @@ const CustomersHistory: React.FC = () => {
     return {
       id: customerId,
       name: customerName,
-      phone: customerPhone,
+      phone: customerPhone || 'غير متوفر',
       invoiceCount: customerInvoices.length,
       totalOil: customerInvoices.reduce((sum, invoice) => sum + invoice.oilAmount, 0),
       latestInvoice: customerInvoices.reduce((latest, invoice) => 
@@ -118,56 +121,77 @@ const CustomersHistory: React.FC = () => {
     (customer.phone && customer.phone.includes(searchTerm))
   );
   
-  const [expandedCustomerId, setExpandedCustomerId] = useState<string | null>(null);
-  
   const toggleCustomerExpanded = (customerId: string) => {
     setExpandedCustomerId(expandedCustomerId === customerId ? null : customerId);
   };
   
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold">سجل الزبائن</h2>
+    <div className="space-y-6 rtl">
+      <h2 className="text-2xl font-bold text-olive-800">سجل الزبائن</h2>
       
       <div className="flex">
         <Input
           placeholder="بحث عن زبون بالاسم أو رقم الهاتف..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-md"
+          className="max-w-md text-right"
         />
       </div>
       
-      <div className="space-y-6">
-        {filteredCustomers.length === 0 ? (
-          <div className="text-center py-10 text-gray-500">
-            <p>لم يتم العثور على أي زبون بهذا الاسم</p>
-          </div>
-        ) : (
-          filteredCustomers.map((customer) => (
-            <Card key={customer.id} className="overflow-hidden">
-              <CardHeader className="bg-olive-600 text-white p-4 cursor-pointer flex justify-between items-center" 
-                onClick={() => toggleCustomerExpanded(customer.id)}>
-                <div>
-                  <h3 className="text-lg font-bold">{customer.name}</h3>
-                  {customer.phone && <p className="text-sm">{customer.phone}</p>}
-                </div>
-                <div className="text-left">
-                  <p className="text-sm">عدد الزيارات: {customer.invoiceCount}</p>
-                  <p className="text-sm">إجمالي الزيت: {customer.totalOil.toFixed(2)} كغم</p>
-                </div>
-              </CardHeader>
-              
-              {expandedCustomerId === customer.id && (
-                <CardContent className="p-4">
-                  <h4 className="font-bold text-lg mb-4">سجل الفواتير:</h4>
-                  {customer.invoices.map((invoice) => (
-                    <CustomerInvoiceDetails key={invoice.id} invoice={invoice} />
-                  ))}
-                </CardContent>
-              )}
-            </Card>
-          ))
-        )}
+      <div className="rounded-lg overflow-hidden border border-olive-200">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="text-right font-bold bg-olive-600 text-white">الاسم</TableHead>
+              <TableHead className="text-right font-bold bg-olive-600 text-white">رقم الهاتف</TableHead>
+              <TableHead className="text-right font-bold bg-olive-600 text-white">عدد الزيارات</TableHead>
+              <TableHead className="text-right font-bold bg-olive-600 text-white">إجمالي الزيت (كغم)</TableHead>
+              <TableHead className="text-right font-bold bg-olive-600 text-white">التفاصيل</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredCustomers.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-10 text-olive-600">
+                  لم يتم العثور على أي زبون بهذا الاسم
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredCustomers.map((customer) => (
+                <React.Fragment key={customer.id}>
+                  <TableRow className="border-b border-olive-200 hover:bg-olive-50/50">
+                    <TableCell className="text-right font-medium text-olive-800">{customer.name}</TableCell>
+                    <TableCell className="text-right text-olive-700">{customer.phone}</TableCell>
+                    <TableCell className="text-right text-olive-700">{customer.invoiceCount}</TableCell>
+                    <TableCell className="text-right text-olive-700">{customer.totalOil.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => toggleCustomerExpanded(customer.id)}
+                      >
+                        <FileText className="h-4 w-4" />
+                        عرض التفاصيل
+                        <ChevronRight className={`h-4 w-4 transition-transform ${expandedCustomerId === customer.id ? 'rotate-90' : ''}`} />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                  {expandedCustomerId === customer.id && (
+                    <TableRow>
+                      <TableCell colSpan={5} className="bg-olive-50/50 px-6 py-4">
+                        <h4 className="font-bold text-lg mb-4 text-olive-800">سجل الفواتير:</h4>
+                        {customer.invoices.map((invoice) => (
+                          <CustomerInvoiceDetails key={invoice.id} invoice={invoice} />
+                        ))}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </React.Fragment>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
