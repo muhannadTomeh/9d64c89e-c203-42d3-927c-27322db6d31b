@@ -8,7 +8,7 @@ const WorkersPage = () => {
   return (
     <MillProvider>
       <Layout>
-        <div className="rtl" dir="rtl">
+        <div className="rtl" dir="rtl" style={{ direction: 'rtl', textAlign: 'right' }}>
           <WorkersManagement />
         </div>
       </Layout>
