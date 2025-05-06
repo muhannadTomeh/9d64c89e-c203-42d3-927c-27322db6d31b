@@ -83,7 +83,6 @@ const WorkersManagement: React.FC = () => {
       hourlyRate: workerType === 'hourly' ? hourlyRate : undefined,
       shiftRate: workerType === 'shift' ? shiftRate : undefined,
       notes: notes.trim() !== '' ? notes : undefined,
-      createdAt: hireDate,
       jobTitle: jobTitle.trim(),
       isActive: isActive
     });
@@ -146,8 +145,6 @@ const WorkersManagement: React.FC = () => {
       amount,
       isPaid: false,
       notes: shiftNotes.trim() !== '' ? shiftNotes : undefined,
-      startTime: worker.type === 'hourly' ? startTime : undefined,
-      endTime: worker.type === 'hourly' ? endTime : undefined
     });
 
     // Reset form
@@ -221,7 +218,7 @@ const WorkersManagement: React.FC = () => {
   
   const filteredWorkers = workers.filter(worker => 
     worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    worker.jobTitle?.toLowerCase().includes(searchQuery.toLowerCase())
+    (worker.jobTitle && worker.jobTitle.toLowerCase().includes(searchQuery.toLowerCase()))
   );
   
   const getRecentShifts = () => {
@@ -231,7 +228,7 @@ const WorkersManagement: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 rtl" dir="rtl">
+    <div className="space-y-6">
       <h2 className="text-2xl font-bold">إدارة العمال</h2>
       
       <Tabs defaultValue="worker-list" className="w-full">
@@ -313,7 +310,7 @@ const WorkersManagement: React.FC = () => {
                     <CardFooter className="flex justify-between border-t border-olive-100 pt-3">
                       <Link to={`/workers/${worker.id}`}>
                         <Button variant="outline" size="sm" className="flex items-center gap-1">
-                          <Edit className="h-4 w-4" />
+                          <Edit className="h-4 w-4 ml-1" />
                           تعديل
                         </Button>
                       </Link>
@@ -324,7 +321,7 @@ const WorkersManagement: React.FC = () => {
                         onClick={() => openPaymentDialog(worker)}
                         disabled={balance <= 0}
                       >
-                        <DollarSign className="h-4 w-4" />
+                        <DollarSign className="h-4 w-4 ml-1" />
                         دفع الراتب
                       </Button>
                     </CardFooter>
@@ -354,6 +351,7 @@ const WorkersManagement: React.FC = () => {
                       value={name} 
                       onChange={e => setName(e.target.value)} 
                       placeholder="أدخل اسم العامل" 
+                      className="text-right"
                     />
                   </div>
                   
@@ -364,6 +362,7 @@ const WorkersManagement: React.FC = () => {
                       value={jobTitle} 
                       onChange={e => setJobTitle(e.target.value)} 
                       placeholder="مثال: عامل معصرة" 
+                      className="text-right"
                     />
                   </div>
                   
@@ -374,6 +373,7 @@ const WorkersManagement: React.FC = () => {
                       value={phoneNumber} 
                       onChange={e => setPhoneNumber(e.target.value)} 
                       placeholder="أدخل رقم الهاتف" 
+                      className="text-right"
                     />
                   </div>
                   
@@ -393,7 +393,7 @@ const WorkersManagement: React.FC = () => {
                   <div className="space-y-2">
                     <Label htmlFor="workerType">نوع العامل</Label>
                     <Select value={workerType} onValueChange={(value: WorkerType) => setWorkerType(value)}>
-                      <SelectTrigger id="workerType">
+                      <SelectTrigger id="workerType" className="text-right">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -413,6 +413,7 @@ const WorkersManagement: React.FC = () => {
                         value={hourlyRate || ''} 
                         onChange={e => setHourlyRate(Number(e.target.value))} 
                         placeholder="أدخل أجر الساعة" 
+                        className="text-right"
                       />
                     </div>
                   )}
@@ -427,6 +428,7 @@ const WorkersManagement: React.FC = () => {
                         value={shiftRate || ''} 
                         onChange={e => setShiftRate(Number(e.target.value))} 
                         placeholder="أدخل أجر الشفت" 
+                        className="text-right"
                       />
                     </div>
                   )}
@@ -434,7 +436,7 @@ const WorkersManagement: React.FC = () => {
                   <div className="space-y-2">
                     <Label htmlFor="isActive">حالة العامل</Label>
                     <Select value={isActive ? "active" : "inactive"} onValueChange={(value) => setIsActive(value === "active")}>
-                      <SelectTrigger id="isActive">
+                      <SelectTrigger id="isActive" className="text-right">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -452,6 +454,7 @@ const WorkersManagement: React.FC = () => {
                       onChange={e => setNotes(e.target.value)} 
                       placeholder="أدخل أي ملاحظات إضافية" 
                       rows={3} 
+                      className="text-right"
                     />
                   </div>
                 </div>
@@ -483,7 +486,7 @@ const WorkersManagement: React.FC = () => {
                   <div className="space-y-2">
                     <Label htmlFor="worker">اختر العامل</Label>
                     <Select value={selectedWorkerId} onValueChange={setSelectedWorkerId}>
-                      <SelectTrigger id="worker">
+                      <SelectTrigger id="worker" className="text-right">
                         <SelectValue placeholder="اختر عامل" />
                       </SelectTrigger>
                       <SelectContent>
@@ -527,7 +530,7 @@ const WorkersManagement: React.FC = () => {
                               type="time"
                               value={startTime}
                               onChange={e => setStartTime(e.target.value)}
-                              className="border-0 p-0 focus-visible:ring-0 focus:outline-none"
+                              className="border-0 p-0 focus-visible:ring-0 focus:outline-none text-right"
                             />
                           </div>
                         </div>
@@ -541,7 +544,7 @@ const WorkersManagement: React.FC = () => {
                               type="time"
                               value={endTime}
                               onChange={e => setEndTime(e.target.value)}
-                              className="border-0 p-0 focus-visible:ring-0 focus:outline-none"
+                              className="border-0 p-0 focus-visible:ring-0 focus:outline-none text-right"
                             />
                           </div>
                         </div>
@@ -563,7 +566,7 @@ const WorkersManagement: React.FC = () => {
                             }
                             return 0;
                           })()}
-                          className="bg-olive-50"
+                          className="bg-olive-50 text-right"
                         />
                       </div>
                     </>
@@ -578,6 +581,7 @@ const WorkersManagement: React.FC = () => {
                         min="1"
                         value={shifts || ''}
                         onChange={e => setShifts(Number(e.target.value))}
+                        className="text-right"
                       />
                     </div>
                   )}
@@ -590,6 +594,7 @@ const WorkersManagement: React.FC = () => {
                       onChange={e => setShiftNotes(e.target.value)}
                       placeholder="أدخل أي ملاحظات إضافية"
                       rows={3}
+                      className="text-right"
                     />
                   </div>
                   
@@ -638,12 +643,12 @@ const WorkersManagement: React.FC = () => {
                             <TableCell>
                               {shift.isPaid ? (
                                 <span className="text-green-600 flex items-center gap-1">
-                                  <CheckCircle className="h-4 w-4" />
+                                  <CheckCircle className="h-4 w-4 ml-1" />
                                   تم الدفع
                                 </span>
                               ) : (
                                 <span className="text-amber-600 flex items-center gap-1">
-                                  <Clock className="h-4 w-4" />
+                                  <Clock className="h-4 w-4 ml-1" />
                                   معلق
                                 </span>
                               )}
@@ -692,9 +697,7 @@ const WorkersManagement: React.FC = () => {
                                 <TableCell>{formatDate(shift.date)}</TableCell>
                                 <TableCell>
                                   {shift.hours !== undefined
-                                    ? (shift.startTime && shift.endTime 
-                                      ? `${shift.startTime} - ${shift.endTime} (${shift.hours} ساعة)`
-                                      : `${shift.hours} ساعة`)
+                                    ? `${shift.hours} ساعة`
                                     : `${shift.shifts} شفت`}
                                 </TableCell>
                                 <TableCell>
@@ -704,12 +707,12 @@ const WorkersManagement: React.FC = () => {
                                 <TableCell>
                                   {shift.isPaid ? (
                                     <span className="text-green-600 flex items-center gap-1">
-                                      <CheckCircle className="h-4 w-4" />
+                                      <CheckCircle className="h-4 w-4 ml-1" />
                                       تم الدفع
                                     </span>
                                   ) : (
                                     <span className="text-amber-600 flex items-center gap-1">
-                                      <Clock className="h-4 w-4" />
+                                      <Clock className="h-4 w-4 ml-1" />
                                       معلق
                                     </span>
                                   )}
@@ -774,7 +777,7 @@ const WorkersManagement: React.FC = () => {
                               onClick={() => openPaymentDialog(worker)}
                               disabled={balance <= 0}
                             >
-                              <DollarSign className="h-4 w-4" />
+                              <DollarSign className="h-4 w-4 ml-1" />
                               دفع الراتب
                             </Button>
                           </TableCell>
@@ -831,7 +834,7 @@ const WorkersManagement: React.FC = () => {
       
       {/* Payment Dialog */}
       <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-        <DialogContent className="sm:max-w-[425px] rtl">
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="text-right">دفع الراتب</DialogTitle>
             <DialogDescription className="text-right">

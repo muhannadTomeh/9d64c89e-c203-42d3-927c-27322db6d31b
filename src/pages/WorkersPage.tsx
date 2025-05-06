@@ -8,7 +8,9 @@ const WorkersPage = () => {
   return (
     <MillProvider>
       <Layout>
-        <WorkersManagement />
+        <div className="rtl" dir="rtl">
+          <WorkersManagement />
+        </div>
       </Layout>
     </MillProvider>
   );

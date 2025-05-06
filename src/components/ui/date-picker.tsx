@@ -32,6 +32,7 @@ export function DatePicker({ date, setDate, className, locale = ar }: DatePicker
           )}
         >
           {date ? format(date, "PPP", { locale }) : "اختر تاريخ"}
+          <CalendarIcon className="mr-auto h-4 w-4 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
