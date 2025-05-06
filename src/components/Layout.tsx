@@ -13,8 +13,8 @@ const NavItem: React.FC<NavItemProps> = ({ to, label, isActive }) => (
     to={to}
     className={`w-full py-4 px-6 text-center font-bold transition-colors ${
       isActive
-        ? 'bg-primary text-white'
-        : 'bg-sidebar-accent text-sidebar-foreground hover:bg-primary/80 hover:text-white'
+        ? 'bg-olive-600 text-white shadow-md'
+        : 'bg-olive-500 text-white hover:bg-olive-600'
     }`}
   >
     {label}
@@ -37,14 +37,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100 rtl">
+    <div className="flex flex-col min-h-screen bg-olive-50 rtl">
       {/* Header */}
-      <header className="bg-sidebar py-4 text-white text-center">
+      <header className="bg-olive-700 py-4 text-white text-center shadow-md">
         <h1 className="text-2xl font-bold">إدارة المعصرة</h1>
       </header>
       
       {/* Navigation */}
-      <nav className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-0">
+      <nav className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-0 shadow-md">
         {navItems.map((item) => (
           <NavItem
             key={item.path}
@@ -57,11 +57,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       
       {/* Main content */}
       <main className="flex-grow p-4 md:p-6">
-        {children}
+        <div className="container mx-auto">
+          {children}
+        </div>
       </main>
       
       {/* Footer */}
-      <footer className="bg-sidebar py-3 text-white text-center text-sm">
+      <footer className="bg-olive-700 py-3 text-white text-center text-sm shadow-inner">
         <p>جميع الحقوق محفوظة &copy; {new Date().getFullYear()} - نظام إدارة معصرة الزيتون</p>
       </footer>
     </div>
