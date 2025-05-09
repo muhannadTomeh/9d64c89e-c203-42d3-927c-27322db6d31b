@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useMillContext } from '@/context/MillContext';
 import { Worker, WorkerShift, WorkerType } from '@/types';
 import { toast } from 'sonner';
-import { Search, Plus, Edit, DollarSign, Clock, Calendar, Briefcase, CheckCircle, XCircle } from 'lucide-react';
+import { Search, Plus, Edit, DollarSign, Clock, Calendar, Briefcase, CheckCircle, XCircle, FileText, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
@@ -234,10 +235,10 @@ const WorkersManagement: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-right">إدارة العمال</h2>
+    <div className="space-y-6" dir="rtl">
+      <h2 className="text-2xl font-bold text-right">العمال</h2>
       
-      <Tabs defaultValue="worker-list" className="w-full" dir="rtl">
+      <Tabs defaultValue="worker-list" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="worker-list">قائمة العمال</TabsTrigger>
           <TabsTrigger value="add-worker">إضافة عامل</TabsTrigger>
@@ -247,96 +248,135 @@ const WorkersManagement: React.FC = () => {
         
         {/* Workers List Tab */}
         <TabsContent value="worker-list" className="space-y-6">
-          <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:space-y-0">
-            <div className="relative w-full md:w-1/3 mr-auto">
-              <Search className="absolute right-2 top-3 h-4 w-4 text-gray-400" />
-              <Input 
-                className="pr-8 text-right" 
-                placeholder="بحث عن اسم العامل أو المسمى الوظيفي..." 
-                value={searchQuery} 
-                onChange={e => setSearchQuery(e.target.value)} 
-              />
+          <div className="flex flex-row-reverse justify-between items-center pb-4">
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="bg-olive-700 text-white hover:bg-olive-800">
+                <X className="ml-2 h-4 w-4" />
+                إلغاء
+              </Button>
+            </div>
+            <h3 className="text-xl font-bold">قائمة العمال</h3>
+          </div>
+          
+          <div className="bg-olive-50/50 p-6 rounded-lg border border-olive-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <Label htmlFor="name" className="block text-right font-medium mb-1">اسم العامل *</Label>
+                <Input 
+                  id="name" 
+                  placeholder="أدخل اسم العامل"
+                  className="text-right"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="phone" className="block text-right font-medium mb-1">رقم الهاتف (اختياري)</Label>
+                <Input 
+                  id="phone" 
+                  placeholder="أدخل رقم الهاتف"
+                  className="text-right"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="workerType" className="block text-right font-medium mb-1">نوع العمل *</Label>
+                <Select value={workerType} onValueChange={(value: WorkerType) => setWorkerType(value)}>
+                  <SelectTrigger id="workerType" className="text-right">
+                    <SelectValue placeholder="عامل بالساعة" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hourly">عامل بالساعة</SelectItem>
+                    <SelectItem value="shift">عامل بالشفت</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="rate" className="block text-right font-medium mb-1">سعر الساعة (شيكل) *</Label>
+                <Input 
+                  id="rate" 
+                  type="number" 
+                  placeholder="أدخل سعر الساعة"
+                  className="text-right"
+                />
+              </div>
+            </div>
+            
+            <div className="flex flex-row-reverse justify-between">
+              <Button className="bg-olive-700 hover:bg-olive-800 text-white">
+                إضافة العامل
+              </Button>
+              <Button variant="outline">
+                إلغاء
+              </Button>
             </div>
           </div>
           
-          {filteredWorkers.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <p>لا يوجد عمال مسجلين</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredWorkers.map(worker => {
-                const w = worker as ExtendedWorker;
-                const balance = getWorkerBalance(worker.id);
-                return (
-                  <Card key={worker.id} className="border border-olive-200 hover:shadow-md transition-shadow">
-                    <CardHeader className={`bg-olive-50 ${w.isActive ? 'border-r-4 border-olive-500' : 'border-r-4 border-red-500'}`}>
-                      <div className="flex justify-between items-center">
-                        <div className={`text-xs font-semibold px-2 py-1 rounded ${w.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                          {w.isActive ? 'نشط' : 'غير نشط'}
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-right"># الاسم</TableHead>
+                  <TableHead className="text-right">نوع العمل</TableHead>
+                  <TableHead className="text-right">رقم الهاتف</TableHead>
+                  <TableHead className="text-right">وحدات العمل</TableHead>
+                  <TableHead className="text-right">سعر الوحدة (شيكل)</TableHead>
+                  <TableHead className="text-right">المستحق (شيكل)</TableHead>
+                  <TableHead className="text-right">المدفوع (شيكل)</TableHead>
+                  <TableHead className="text-right">المتبقي (شيكل)</TableHead>
+                  <TableHead className="text-right">إجراءات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredWorkers.map((worker, index) => {
+                  const w = worker as ExtendedWorker;
+                  const totalDue = getWorkerTotalDue(worker.id);
+                  const totalPaid = getWorkerPaidAmount(worker.id);
+                  const balance = getWorkerBalance(worker.id);
+                  
+                  return (
+                    <TableRow key={worker.id}>
+                      <TableCell className="font-medium">{index + 1} {worker.name}</TableCell>
+                      <TableCell>{worker.type === 'hourly' ? 'بالساعة' : 'شفت'}</TableCell>
+                      <TableCell>{worker.phoneNumber || '-'}</TableCell>
+                      <TableCell>
+                        {worker.type === 'hourly' 
+                          ? workerShifts.filter(s => s.workerId === worker.id).reduce((sum, s) => sum + (s.hours || 0), 0)
+                          : workerShifts.filter(s => s.workerId === worker.id).reduce((sum, s) => sum + (s.shifts || 0), 0)}
+                      </TableCell>
+                      <TableCell>
+                        {worker.type === 'hourly' ? worker.hourlyRate : worker.shiftRate}
+                      </TableCell>
+                      <TableCell>{totalDue}</TableCell>
+                      <TableCell>{totalPaid}</TableCell>
+                      <TableCell className={balance > 0 ? 'text-red-600 font-bold' : 'text-green-600'}>
+                        {balance}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2 justify-end">
+                          <Button variant="ghost" size="icon" className="h-8 w-8 border border-olive-200">
+                            <FileText className="h-4 w-4 text-olive-600" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 border border-olive-200">
+                            <Edit className="h-4 w-4 text-olive-600" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 border border-olive-200"
+                            onClick={() => openPaymentDialog(w)}
+                            disabled={balance <= 0}
+                          >
+                            <DollarSign className="h-4 w-4 text-olive-600" />
+                          </Button>
                         </div>
-                        <CardTitle className="text-lg text-olive-900">{worker.name}</CardTitle>
-                      </div>
-                      <CardDescription className="text-olive-700">
-                        <div className="flex items-center gap-1 justify-end">
-                          <span>{w.jobTitle || 'عامل'}</span>
-                          <Briefcase className="h-4 w-4" />
-                        </div>
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-4">
-                      <div className="space-y-3 text-right">
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="text-right">
-                            <p className="text-sm text-olive-600">نوع العمل:</p>
-                            <p className="font-semibold text-olive-900">
-                              {worker.type === 'hourly' ? 'بالساعة' : 'بالشفت'}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm text-olive-600">الأجر:</p>
-                            <p className="font-semibold text-olive-900">
-                              {worker.type === 'hourly' 
-                                ? `${worker.hourlyRate} شيكل/ساعة` 
-                                : `${worker.shiftRate} شيكل/شفت`}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm text-olive-600">تاريخ التوظيف:</p>
-                            <p className="font-semibold text-olive-900">{formatDate(worker.createdAt)}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm text-olive-600">المستحقات:</p>
-                            <p className={`font-bold ${balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                              {balance} شيكل
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                    <CardFooter className="flex justify-between border-t border-olive-100 pt-3">
-                      <Button 
-                        variant="default" 
-                        size="sm" 
-                        className="flex items-center gap-1"
-                        onClick={() => openPaymentDialog(w)}
-                        disabled={balance <= 0}
-                      >
-                        <DollarSign className="h-4 w-4 ml-1" />
-                        دفع الراتب
-                      </Button>
-                      <Link to={`/workers/${worker.id}`}>
-                        <Button variant="outline" size="sm" className="flex items-center gap-1">
-                          <Edit className="h-4 w-4 ml-1" />
-                          تعديل
-                        </Button>
-                      </Link>
-                    </CardFooter>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </TabsContent>
         
         {/* Add Worker Tab */}
@@ -790,4 +830,72 @@ const WorkersManagement: React.FC = () => {
                               {balance} شيكل
                             </TableCell>
                             <TableCell>{totalPaid} شيكل</TableCell>
-                            <TableCell>{total
+                            <TableCell>{totalDue} شيكل</TableCell>
+                            <TableCell className="font-medium">{worker.name}</TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+      
+      {/* Payment Dialog */}
+      <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+        <DialogContent className="sm:max-w-[500px]" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-right">تسجيل دفعة جديدة</DialogTitle>
+            <DialogDescription className="text-right">
+              {selectedPaymentWorker && (
+                <>
+                  <p className="text-lg font-bold mt-2">اسم العامل: {selectedPaymentWorker.name}</p>
+                  <p>المبلغ المستحق: {getWorkerBalance(selectedPaymentWorker.id)} شيكل</p>
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="paymentAmount" className="text-right block">المبلغ المراد دفعه (شيكل)</Label>
+              <Input
+                id="paymentAmount"
+                type="number"
+                min="0"
+                className="text-right"
+                value={paymentAmount}
+                onChange={e => setPaymentAmount(Number(e.target.value))}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="paymentNotes" className="text-right block">ملاحظات (اختياري)</Label>
+              <Textarea
+                id="paymentNotes"
+                className="text-right"
+                placeholder="أي ملاحظات خاصة بالدفعة..."
+                value={paymentNotes}
+                onChange={e => setPaymentNotes(e.target.value)}
+              />
+            </div>
+          </div>
+          
+          <DialogFooter className="sm:justify-between">
+            <Button variant="outline" onClick={() => setShowPaymentDialog(false)}>
+              إلغاء
+            </Button>
+            <Button type="submit" className="bg-olive-600 hover:bg-olive-700" onClick={handleAddPayment}>
+              تأكيد الدفع
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default WorkersManagement;
