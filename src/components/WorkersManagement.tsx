@@ -228,8 +228,8 @@ const WorkersManagement: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold">إدارة العمال</h2>
+    <div className="space-y-6" dir="rtl">
+      <h2 className="text-2xl font-bold text-right">إدارة العمال</h2>
       
       <Tabs defaultValue="worker-list" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
@@ -336,8 +336,8 @@ const WorkersManagement: React.FC = () => {
         <TabsContent value="add-worker" className="space-y-6">
           <Card>
             <CardHeader className="bg-olive-500 text-white">
-              <CardTitle>إضافة عامل جديد</CardTitle>
-              <CardDescription className="text-olive-50">
+              <CardTitle className="text-right">إضافة عامل جديد</CardTitle>
+              <CardDescription className="text-olive-50 text-right">
                 أدخل بيانات العامل الجديد
               </CardDescription>
             </CardHeader>
@@ -345,7 +345,7 @@ const WorkersManagement: React.FC = () => {
               <form onSubmit={handleAddWorker} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">اسم العامل الكامل</Label>
+                    <Label htmlFor="name" className="block text-right">اسم العامل الكامل</Label>
                     <Input 
                       id="name" 
                       value={name} 
@@ -356,7 +356,7 @@ const WorkersManagement: React.FC = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="jobTitle">المسمى الوظيفي</Label>
+                    <Label htmlFor="jobTitle" className="block text-right">المسمى الوظيفي</Label>
                     <Input 
                       id="jobTitle" 
                       value={jobTitle} 
@@ -367,7 +367,7 @@ const WorkersManagement: React.FC = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="phoneNumber">رقم الهاتف (اختياري)</Label>
+                    <Label htmlFor="phoneNumber" className="block text-right">رقم الهاتف (اختياري)</Label>
                     <Input 
                       id="phoneNumber" 
                       value={phoneNumber} 
@@ -378,20 +378,20 @@ const WorkersManagement: React.FC = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="hireDate">تاريخ التوظيف</Label>
+                    <Label htmlFor="hireDate" className="block text-right">تاريخ التوظيف</Label>
                     <div className="flex items-center border rounded-md border-olive-300 px-3 py-2">
-                      <Calendar className="h-4 w-4 text-olive-500 ml-2" />
                       <DatePicker
                         date={hireDate}
                         setDate={setHireDate}
                         locale={ar}
                         className="w-full"
                       />
+                      <Calendar className="h-4 w-4 text-olive-500 mr-2" />
                     </div>
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="workerType">نوع العامل</Label>
+                    <Label htmlFor="workerType" className="block text-right">نوع العامل</Label>
                     <Select value={workerType} onValueChange={(value: WorkerType) => setWorkerType(value)}>
                       <SelectTrigger id="workerType" className="text-right">
                         <SelectValue />
@@ -405,7 +405,7 @@ const WorkersManagement: React.FC = () => {
                   
                   {workerType === 'hourly' && (
                     <div className="space-y-2">
-                      <Label htmlFor="hourlyRate">أجر الساعة (شيكل)</Label>
+                      <Label htmlFor="hourlyRate" className="block text-right">أجر الساعة (شيكل)</Label>
                       <Input 
                         id="hourlyRate" 
                         type="number" 
@@ -420,7 +420,7 @@ const WorkersManagement: React.FC = () => {
                   
                   {workerType === 'shift' && (
                     <div className="space-y-2">
-                      <Label htmlFor="shiftRate">أجر الشفت (شيكل)</Label>
+                      <Label htmlFor="shiftRate" className="block text-right">أجر الشفت (شيكل)</Label>
                       <Input 
                         id="shiftRate" 
                         type="number" 
@@ -434,7 +434,7 @@ const WorkersManagement: React.FC = () => {
                   )}
                   
                   <div className="space-y-2">
-                    <Label htmlFor="isActive">حالة العامل</Label>
+                    <Label htmlFor="isActive" className="block text-right">حالة العامل</Label>
                     <Select value={isActive ? "active" : "inactive"} onValueChange={(value) => setIsActive(value === "active")}>
                       <SelectTrigger id="isActive" className="text-right">
                         <SelectValue />
@@ -447,7 +447,7 @@ const WorkersManagement: React.FC = () => {
                   </div>
                   
                   <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="notes">ملاحظات (اختياري)</Label>
+                    <Label htmlFor="notes" className="block text-right">ملاحظات (اختياري)</Label>
                     <Textarea 
                       id="notes" 
                       value={notes} 
@@ -475,7 +475,7 @@ const WorkersManagement: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Add Work Session Form */}
             <Card className="md:col-span-1">
-              <CardHeader className="bg-olive-500 text-white">
+              <CardHeader className="bg-olive-500 text-white text-right">
                 <CardTitle>تسجيل جلسة عمل</CardTitle>
                 <CardDescription className="text-olive-50">
                   أدخل بيانات جلسة عمل جديدة
@@ -484,7 +484,7 @@ const WorkersManagement: React.FC = () => {
               <CardContent className="pt-4">
                 <form onSubmit={handleAddShift} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="worker">اختر العامل</Label>
+                    <Label htmlFor="worker" className="block text-right">اختر العامل</Label>
                     <Select value={selectedWorkerId} onValueChange={setSelectedWorkerId}>
                       <SelectTrigger id="worker" className="text-right">
                         <SelectValue placeholder="اختر عامل" />
@@ -506,15 +506,15 @@ const WorkersManagement: React.FC = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="sessionDate">تاريخ العمل</Label>
+                    <Label htmlFor="sessionDate" className="block text-right">تاريخ العمل</Label>
                     <div className="flex items-center border rounded-md border-olive-300 px-3 py-2">
-                      <Calendar className="h-4 w-4 text-olive-500 ml-2" />
                       <DatePicker
                         date={sessionDate}
                         setDate={setSessionDate}
                         locale={ar}
                         className="w-full"
                       />
+                      <Calendar className="h-4 w-4 text-olive-500 mr-2" />
                     </div>
                   </div>
                   
@@ -522,9 +522,8 @@ const WorkersManagement: React.FC = () => {
                     <>
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-2">
-                          <Label htmlFor="startTime">وقت البدء</Label>
+                          <Label htmlFor="startTime" className="block text-right">وقت البدء</Label>
                           <div className="flex items-center border rounded-md border-olive-300 px-3 py-2">
-                            <Clock className="h-4 w-4 text-olive-500 ml-2" />
                             <Input
                               id="startTime"
                               type="time"
@@ -532,13 +531,13 @@ const WorkersManagement: React.FC = () => {
                               onChange={e => setStartTime(e.target.value)}
                               className="border-0 p-0 focus-visible:ring-0 focus:outline-none text-right"
                             />
+                            <Clock className="h-4 w-4 text-olive-500 mr-2" />
                           </div>
                         </div>
                         
                         <div className="space-y-2">
-                          <Label htmlFor="endTime">وقت الانتهاء</Label>
+                          <Label htmlFor="endTime" className="block text-right">وقت الانتهاء</Label>
                           <div className="flex items-center border rounded-md border-olive-300 px-3 py-2">
-                            <Clock className="h-4 w-4 text-olive-500 ml-2" />
                             <Input
                               id="endTime"
                               type="time"
@@ -546,12 +545,13 @@ const WorkersManagement: React.FC = () => {
                               onChange={e => setEndTime(e.target.value)}
                               className="border-0 p-0 focus-visible:ring-0 focus:outline-none text-right"
                             />
+                            <Clock className="h-4 w-4 text-olive-500 mr-2" />
                           </div>
                         </div>
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="hours">عدد الساعات (محسوب تلقائياً)</Label>
+                        <Label htmlFor="hours" className="block text-right">عدد الساعات (محسوب تلقائياً)</Label>
                         <Input
                           id="hours"
                           type="number"
@@ -574,7 +574,7 @@ const WorkersManagement: React.FC = () => {
                   
                   {selectedWorkerId && workers.find(w => w.id === selectedWorkerId)?.type === 'shift' && (
                     <div className="space-y-2">
-                      <Label htmlFor="shifts">عدد الشفتات</Label>
+                      <Label htmlFor="shifts" className="block text-right">عدد الشفتات</Label>
                       <Input
                         id="shifts"
                         type="number"
@@ -587,7 +587,7 @@ const WorkersManagement: React.FC = () => {
                   )}
                   
                   <div className="space-y-2">
-                    <Label htmlFor="shiftNotes">ملاحظات (اختياري)</Label>
+                    <Label htmlFor="shiftNotes" className="block text-right">ملاحظات (اختياري)</Label>
                     <Textarea
                       id="shiftNotes"
                       value={shiftNotes}
@@ -607,7 +607,7 @@ const WorkersManagement: React.FC = () => {
             
             {/* Recent Work Sessions */}
             <Card className="md:col-span-2">
-              <CardHeader className="bg-olive-100">
+              <CardHeader className="bg-olive-100 text-right">
                 <CardTitle>آخر جلسات العمل</CardTitle>
                 <CardDescription>أحدث 5 جلسات عمل</CardDescription>
               </CardHeader>
@@ -620,11 +620,11 @@ const WorkersManagement: React.FC = () => {
                   <Table className="border-none">
                     <TableHeader>
                       <TableRow>
-                        <TableHead>اسم العامل</TableHead>
-                        <TableHead>التاريخ</TableHead>
-                        <TableHead>التفاصيل</TableHead>
-                        <TableHead>المبلغ</TableHead>
-                        <TableHead>الحالة</TableHead>
+                        <TableHead className="text-right">اسم العامل</TableHead>
+                        <TableHead className="text-right">التاريخ</TableHead>
+                        <TableHead className="text-right">التفاصيل</TableHead>
+                        <TableHead className="text-right">المبلغ</TableHead>
+                        <TableHead className="text-right">الحالة</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -632,15 +632,15 @@ const WorkersManagement: React.FC = () => {
                         const worker = workers.find(w => w.id === shift.workerId);
                         return (
                           <TableRow key={shift.id}>
-                            <TableCell className="font-medium">{worker?.name}</TableCell>
-                            <TableCell>{formatDate(shift.date)}</TableCell>
-                            <TableCell>
+                            <TableCell className="font-medium text-right">{worker?.name}</TableCell>
+                            <TableCell className="text-right">{formatDate(shift.date)}</TableCell>
+                            <TableCell className="text-right">
                               {shift.hours !== undefined
                                 ? `${shift.hours} ساعة`
                                 : `${shift.shifts} شفت`}
                             </TableCell>
-                            <TableCell>{shift.amount} شيكل</TableCell>
-                            <TableCell>
+                            <TableCell className="text-right">{shift.amount} شيكل</TableCell>
+                            <TableCell className="text-right">
                               {shift.isPaid ? (
                                 <span className="text-green-600 flex items-center gap-1">
                                   <CheckCircle className="h-4 w-4 ml-1" />
@@ -664,7 +664,7 @@ const WorkersManagement: React.FC = () => {
             
             {/* All Work Sessions */}
             <Card className="md:col-span-3">
-              <CardHeader className="bg-olive-100">
+              <CardHeader className="bg-olive-100 text-right">
                 <CardTitle>جميع جلسات العمل</CardTitle>
                 <CardDescription>سجل كامل لجميع جلسات العمل</CardDescription>
               </CardHeader>
@@ -678,12 +678,12 @@ const WorkersManagement: React.FC = () => {
                     <Table className="border-none">
                       <TableHeader className="sticky top-0 bg-white">
                         <TableRow>
-                          <TableHead>اسم العامل</TableHead>
-                          <TableHead>التاريخ</TableHead>
-                          <TableHead>التفاصيل</TableHead>
-                          <TableHead>نوع العمل</TableHead>
-                          <TableHead>المبلغ</TableHead>
-                          <TableHead>الحالة</TableHead>
+                          <TableHead className="text-right">اسم العامل</TableHead>
+                          <TableHead className="text-right">التاريخ</TableHead>
+                          <TableHead className="text-right">التفاصيل</TableHead>
+                          <TableHead className="text-right">نوع العمل</TableHead>
+                          <TableHead className="text-right">المبلغ</TableHead>
+                          <TableHead className="text-right">الحالة</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -693,18 +693,18 @@ const WorkersManagement: React.FC = () => {
                             const worker = workers.find(w => w.id === shift.workerId);
                             return (
                               <TableRow key={shift.id}>
-                                <TableCell className="font-medium">{worker?.name}</TableCell>
-                                <TableCell>{formatDate(shift.date)}</TableCell>
-                                <TableCell>
+                                <TableCell className="font-medium text-right">{worker?.name}</TableCell>
+                                <TableCell className="text-right">{formatDate(shift.date)}</TableCell>
+                                <TableCell className="text-right">
                                   {shift.hours !== undefined
                                     ? `${shift.hours} ساعة`
                                     : `${shift.shifts} شفت`}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="text-right">
                                   {worker?.type === 'hourly' ? 'بالساعة' : 'بالشفت'}
                                 </TableCell>
-                                <TableCell>{shift.amount} شيكل</TableCell>
-                                <TableCell>
+                                <TableCell className="text-right">{shift.amount} شيكل</TableCell>
+                                <TableCell className="text-right">
                                   {shift.isPaid ? (
                                     <span className="text-green-600 flex items-center gap-1">
                                       <CheckCircle className="h-4 w-4 ml-1" />
@@ -732,7 +732,7 @@ const WorkersManagement: React.FC = () => {
         {/* Salary Payments Tab */}
         <TabsContent value="salary-payments" className="space-y-6">
           <Card>
-            <CardHeader className="bg-olive-500 text-white">
+            <CardHeader className="bg-olive-500 text-white text-right">
               <CardTitle>سجل المدفوعات</CardTitle>
               <CardDescription className="text-olive-50">
                 سجل مدفوعات العمال
@@ -742,11 +742,11 @@ const WorkersManagement: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>اسم العامل</TableHead>
-                    <TableHead>إجمالي المستحقات</TableHead>
-                    <TableHead>إجمالي المدفوعات</TableHead>
-                    <TableHead>المبلغ المتبقي</TableHead>
-                    <TableHead>الإجراءات</TableHead>
+                    <TableHead className="text-right">اسم العامل</TableHead>
+                    <TableHead className="text-right">إجمالي المستحقات</TableHead>
+                    <TableHead className="text-right">إجمالي المدفوعات</TableHead>
+                    <TableHead className="text-right">المبلغ المتبقي</TableHead>
+                    <TableHead className="text-right">الإجراءات</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -763,13 +763,13 @@ const WorkersManagement: React.FC = () => {
                       const balance = getWorkerBalance(worker.id);
                       return (
                         <TableRow key={worker.id}>
-                          <TableCell className="font-medium">{worker.name}</TableCell>
-                          <TableCell>{totalDue} شيكل</TableCell>
-                          <TableCell>{totalPaid} شيكل</TableCell>
-                          <TableCell className={balance > 0 ? 'text-red-600 font-bold' : 'text-green-600'}>
+                          <TableCell className="font-medium text-right">{worker.name}</TableCell>
+                          <TableCell className="text-right">{totalDue} شيكل</TableCell>
+                          <TableCell className="text-right">{totalPaid} شيكل</TableCell>
+                          <TableCell className={`text-right ${balance > 0 ? 'text-red-600 font-bold' : 'text-green-600'}`}>
                             {balance} شيكل
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="text-right">
                             <Button 
                               variant="outline" 
                               size="sm" 
@@ -791,7 +791,7 @@ const WorkersManagement: React.FC = () => {
           </Card>
           
           <Card>
-            <CardHeader className="bg-olive-100">
+            <CardHeader className="bg-olive-100 text-right">
               <CardTitle>سجل الدفعات السابقة</CardTitle>
               <CardDescription>تاريخ جميع الدفعات</CardDescription>
             </CardHeader>
@@ -804,10 +804,10 @@ const WorkersManagement: React.FC = () => {
                 <Table>
                   <TableHeader className="sticky top-0 bg-white">
                     <TableRow>
-                      <TableHead>اسم العامل</TableHead>
-                      <TableHead>التاريخ</TableHead>
-                      <TableHead>المبلغ</TableHead>
-                      <TableHead>ملاحظات</TableHead>
+                      <TableHead className="text-right">اسم العامل</TableHead>
+                      <TableHead className="text-right">التاريخ</TableHead>
+                      <TableHead className="text-right">المبلغ</TableHead>
+                      <TableHead className="text-right">ملاحظات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -817,10 +817,10 @@ const WorkersManagement: React.FC = () => {
                         const worker = workers.find(w => w.id === payment.workerId);
                         return (
                           <TableRow key={payment.id}>
-                            <TableCell className="font-medium">{worker?.name}</TableCell>
-                            <TableCell>{formatDate(payment.date)}</TableCell>
-                            <TableCell>{payment.amount} شيكل</TableCell>
-                            <TableCell>{payment.notes || '-'}</TableCell>
+                            <TableCell className="font-medium text-right">{worker?.name}</TableCell>
+                            <TableCell className="text-right">{formatDate(payment.date)}</TableCell>
+                            <TableCell className="text-right">{payment.amount} شيكل</TableCell>
+                            <TableCell className="text-right">{payment.notes || '-'}</TableCell>
                           </TableRow>
                         );
                       })}
