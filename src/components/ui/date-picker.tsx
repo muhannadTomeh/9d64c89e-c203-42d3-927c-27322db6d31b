@@ -11,7 +11,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import type { Locale } from "date-fns"; // Add this import to fix the TypeScript error
 
 interface DatePickerProps {
   date: Date | undefined;
