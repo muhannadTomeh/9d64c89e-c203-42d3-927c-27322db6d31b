@@ -2,7 +2,7 @@
 import * as React from "react";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
-import { ar, Locale } from "date-fns/locale";
+import { ar } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -11,6 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import type { Locale } from "date-fns"; // Add this import to fix the TypeScript error
 
 interface DatePickerProps {
   date: Date | undefined;

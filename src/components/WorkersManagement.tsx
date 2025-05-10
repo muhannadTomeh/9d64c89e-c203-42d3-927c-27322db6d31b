@@ -7,16 +7,22 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useMillContext } from '@/context/MillContext';
-import { Worker, WorkerShift, WorkerPayment, WorkerType } from '@/types';
+import { Worker, WorkerShift, WorkerType } from '@/types';
 import { toast } from 'sonner';
-import { Search, Plus, Edit, DollarSign, Clock, Calendar, User, Briefcase, CheckCircle, XCircle } from 'lucide-react';
+import { Search, Plus, Edit, DollarSign, Clock, Calendar, Briefcase, CheckCircle, XCircle, FileText, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+
+// Extend the Worker type to include the missing properties
+interface ExtendedWorker extends Worker {
+  jobTitle?: string;
+  isActive?: boolean;
+}
 
 const WorkersManagement: React.FC = () => {
   const {
@@ -55,7 +61,7 @@ const WorkersManagement: React.FC = () => {
   const [paymentAmount, setPaymentAmount] = useState(0);
   const [paymentNotes, setPaymentNotes] = useState('');
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
-  const [selectedPaymentWorker, setSelectedPaymentWorker] = useState<Worker | null>(null);
+  const [selectedPaymentWorker, setSelectedPaymentWorker] = useState<ExtendedWorker | null>(null);
 
   const handleAddWorker = (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +91,7 @@ const WorkersManagement: React.FC = () => {
       notes: notes.trim() !== '' ? notes : undefined,
       jobTitle: jobTitle.trim(),
       isActive: isActive
-    });
+    } as any); // Use type assertion to work around TypeScript errors temporarily
 
     // Reset form
     resetWorkerForm();
@@ -110,7 +116,7 @@ const WorkersManagement: React.FC = () => {
       toast.error('الرجاء اختيار عامل');
       return;
     }
-    const worker = workers.find(w => w.id === selectedWorkerId);
+    const worker = workers.find(w => w.id === selectedWorkerId) as ExtendedWorker;
     if (!worker) {
       toast.error('العامل غير موجود');
       return;
@@ -184,7 +190,7 @@ const WorkersManagement: React.FC = () => {
     toast.success('تم تسجيل الدفعة بنجاح');
   };
   
-  const openPaymentDialog = (worker: Worker) => {
+  const openPaymentDialog = (worker: ExtendedWorker) => {
     setSelectedPaymentWorker(worker);
     setPaymentAmount(getWorkerBalance(worker.id));
     setShowPaymentDialog(true);
@@ -216,10 +222,11 @@ const WorkersManagement: React.FC = () => {
     return format(new Date(date), 'dd MMM yyyy', { locale: ar });
   };
   
-  const filteredWorkers = workers.filter(worker => 
-    worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (worker.jobTitle && worker.jobTitle.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredWorkers = workers.filter(worker => {
+    const w = worker as ExtendedWorker;
+    return w.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (w.jobTitle && w.jobTitle.toLowerCase().includes(searchQuery.toLowerCase()));
+  });
   
   const getRecentShifts = () => {
     return [...workerShifts]
@@ -229,7 +236,7 @@ const WorkersManagement: React.FC = () => {
 
   return (
     <div className="space-y-6" dir="rtl">
-      <h2 className="text-2xl font-bold text-right">إدارة العمال</h2>
+      <h2 className="text-2xl font-bold text-right">العمال</h2>
       
       <Tabs defaultValue="worker-list" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
@@ -241,95 +248,135 @@ const WorkersManagement: React.FC = () => {
         
         {/* Workers List Tab */}
         <TabsContent value="worker-list" className="space-y-6">
-          <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:space-y-0">
-            <div className="relative w-full md:w-1/3">
-              <Search className="absolute right-2 top-3 h-4 w-4 text-gray-400" />
-              <Input 
-                className="pr-8 text-right" 
-                placeholder="بحث عن اسم العامل أو المسمى الوظيفي..." 
-                value={searchQuery} 
-                onChange={e => setSearchQuery(e.target.value)} 
-              />
+          <div className="flex flex-row-reverse justify-between items-center pb-4">
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="bg-olive-700 text-white hover:bg-olive-800">
+                <X className="ml-2 h-4 w-4" />
+                إلغاء
+              </Button>
+            </div>
+            <h3 className="text-xl font-bold">قائمة العمال</h3>
+          </div>
+          
+          <div className="bg-olive-50/50 p-6 rounded-lg border border-olive-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <Label htmlFor="name" className="block text-right font-medium mb-1">اسم العامل *</Label>
+                <Input 
+                  id="name" 
+                  placeholder="أدخل اسم العامل"
+                  className="text-right"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="phone" className="block text-right font-medium mb-1">رقم الهاتف (اختياري)</Label>
+                <Input 
+                  id="phone" 
+                  placeholder="أدخل رقم الهاتف"
+                  className="text-right"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="workerType" className="block text-right font-medium mb-1">نوع العمل *</Label>
+                <Select value={workerType} onValueChange={(value: WorkerType) => setWorkerType(value)}>
+                  <SelectTrigger id="workerType" className="text-right">
+                    <SelectValue placeholder="عامل بالساعة" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hourly">عامل بالساعة</SelectItem>
+                    <SelectItem value="shift">عامل بالشفت</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="rate" className="block text-right font-medium mb-1">سعر الساعة (شيكل) *</Label>
+                <Input 
+                  id="rate" 
+                  type="number" 
+                  placeholder="أدخل سعر الساعة"
+                  className="text-right"
+                />
+              </div>
+            </div>
+            
+            <div className="flex flex-row-reverse justify-between">
+              <Button className="bg-olive-700 hover:bg-olive-800 text-white">
+                إضافة العامل
+              </Button>
+              <Button variant="outline">
+                إلغاء
+              </Button>
             </div>
           </div>
           
-          {filteredWorkers.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <p>لا يوجد عمال مسجلين</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredWorkers.map(worker => {
-                const balance = getWorkerBalance(worker.id);
-                return (
-                  <Card key={worker.id} className="border border-olive-200 hover:shadow-md transition-shadow">
-                    <CardHeader className={`bg-olive-50 ${worker.isActive ? 'border-r-4 border-olive-500' : 'border-r-4 border-red-500'}`}>
-                      <div className="flex justify-between items-center">
-                        <CardTitle className="text-lg text-olive-900">{worker.name}</CardTitle>
-                        <div className={`text-xs font-semibold px-2 py-1 rounded ${worker.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                          {worker.isActive ? 'نشط' : 'غير نشط'}
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-right"># الاسم</TableHead>
+                  <TableHead className="text-right">نوع العمل</TableHead>
+                  <TableHead className="text-right">رقم الهاتف</TableHead>
+                  <TableHead className="text-right">وحدات العمل</TableHead>
+                  <TableHead className="text-right">سعر الوحدة (شيكل)</TableHead>
+                  <TableHead className="text-right">المستحق (شيكل)</TableHead>
+                  <TableHead className="text-right">المدفوع (شيكل)</TableHead>
+                  <TableHead className="text-right">المتبقي (شيكل)</TableHead>
+                  <TableHead className="text-right">إجراءات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredWorkers.map((worker, index) => {
+                  const w = worker as ExtendedWorker;
+                  const totalDue = getWorkerTotalDue(worker.id);
+                  const totalPaid = getWorkerPaidAmount(worker.id);
+                  const balance = getWorkerBalance(worker.id);
+                  
+                  return (
+                    <TableRow key={worker.id}>
+                      <TableCell className="font-medium">{index + 1} {worker.name}</TableCell>
+                      <TableCell>{worker.type === 'hourly' ? 'بالساعة' : 'شفت'}</TableCell>
+                      <TableCell>{worker.phoneNumber || '-'}</TableCell>
+                      <TableCell>
+                        {worker.type === 'hourly' 
+                          ? workerShifts.filter(s => s.workerId === worker.id).reduce((sum, s) => sum + (s.hours || 0), 0)
+                          : workerShifts.filter(s => s.workerId === worker.id).reduce((sum, s) => sum + (s.shifts || 0), 0)}
+                      </TableCell>
+                      <TableCell>
+                        {worker.type === 'hourly' ? worker.hourlyRate : worker.shiftRate}
+                      </TableCell>
+                      <TableCell>{totalDue}</TableCell>
+                      <TableCell>{totalPaid}</TableCell>
+                      <TableCell className={balance > 0 ? 'text-red-600 font-bold' : 'text-green-600'}>
+                        {balance}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2 justify-end">
+                          <Button variant="ghost" size="icon" className="h-8 w-8 border border-olive-200">
+                            <FileText className="h-4 w-4 text-olive-600" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 border border-olive-200">
+                            <Edit className="h-4 w-4 text-olive-600" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 border border-olive-200"
+                            onClick={() => openPaymentDialog(w)}
+                            disabled={balance <= 0}
+                          >
+                            <DollarSign className="h-4 w-4 text-olive-600" />
+                          </Button>
                         </div>
-                      </div>
-                      <CardDescription className="text-olive-700">
-                        <div className="flex items-center gap-1">
-                          <Briefcase className="h-4 w-4" />
-                          <span>{worker.jobTitle || 'عامل'}</span>
-                        </div>
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-4">
-                      <div className="space-y-3 text-right">
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <p className="text-sm text-olive-600">نوع العمل:</p>
-                            <p className="font-semibold text-olive-900">
-                              {worker.type === 'hourly' ? 'بالساعة' : 'بالشفت'}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-olive-600">الأجر:</p>
-                            <p className="font-semibold text-olive-900">
-                              {worker.type === 'hourly' 
-                                ? `${worker.hourlyRate} شيكل/ساعة` 
-                                : `${worker.shiftRate} شيكل/شفت`}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-olive-600">تاريخ التوظيف:</p>
-                            <p className="font-semibold text-olive-900">{formatDate(worker.createdAt)}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-olive-600">المستحقات:</p>
-                            <p className={`font-bold ${balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                              {balance} شيكل
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                    <CardFooter className="flex justify-between border-t border-olive-100 pt-3">
-                      <Link to={`/workers/${worker.id}`}>
-                        <Button variant="outline" size="sm" className="flex items-center gap-1">
-                          <Edit className="h-4 w-4 ml-1" />
-                          تعديل
-                        </Button>
-                      </Link>
-                      <Button 
-                        variant="default" 
-                        size="sm" 
-                        className="flex items-center gap-1"
-                        onClick={() => openPaymentDialog(worker)}
-                        disabled={balance <= 0}
-                      >
-                        <DollarSign className="h-4 w-4 ml-1" />
-                        دفع الراتب
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </TabsContent>
         
         {/* Add Worker Tab */}
@@ -459,7 +506,7 @@ const WorkersManagement: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="flex justify-end">
+                <div className="flex justify-start">
                   <Button type="submit" className="bg-olive-500 hover:bg-olive-600">
                     <Plus className="ml-2 h-4 w-4" />
                     حفظ بيانات العامل
@@ -475,9 +522,9 @@ const WorkersManagement: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Add Work Session Form */}
             <Card className="md:col-span-1">
-              <CardHeader className="bg-olive-500 text-white text-right">
-                <CardTitle>تسجيل جلسة عمل</CardTitle>
-                <CardDescription className="text-olive-50">
+              <CardHeader className="bg-olive-500 text-white">
+                <CardTitle className="text-right">تسجيل جلسة عمل</CardTitle>
+                <CardDescription className="text-olive-50 text-right">
                   أدخل بيانات جلسة عمل جديدة
                 </CardDescription>
               </CardHeader>
@@ -607,9 +654,9 @@ const WorkersManagement: React.FC = () => {
             
             {/* Recent Work Sessions */}
             <Card className="md:col-span-2">
-              <CardHeader className="bg-olive-100 text-right">
-                <CardTitle>آخر جلسات العمل</CardTitle>
-                <CardDescription>أحدث 5 جلسات عمل</CardDescription>
+              <CardHeader className="bg-olive-100">
+                <CardTitle className="text-right">آخر جلسات العمل</CardTitle>
+                <CardDescription className="text-right">أحدث 5 جلسات عمل</CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 {workerShifts.length === 0 ? (
@@ -617,56 +664,58 @@ const WorkersManagement: React.FC = () => {
                     <p>لا يوجد جلسات عمل مسجلة</p>
                   </div>
                 ) : (
-                  <Table className="border-none">
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="text-right">اسم العامل</TableHead>
-                        <TableHead className="text-right">التاريخ</TableHead>
-                        <TableHead className="text-right">التفاصيل</TableHead>
-                        <TableHead className="text-right">المبلغ</TableHead>
-                        <TableHead className="text-right">الحالة</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {getRecentShifts().map(shift => {
-                        const worker = workers.find(w => w.id === shift.workerId);
-                        return (
-                          <TableRow key={shift.id}>
-                            <TableCell className="font-medium text-right">{worker?.name}</TableCell>
-                            <TableCell className="text-right">{formatDate(shift.date)}</TableCell>
-                            <TableCell className="text-right">
-                              {shift.hours !== undefined
-                                ? `${shift.hours} ساعة`
-                                : `${shift.shifts} شفت`}
-                            </TableCell>
-                            <TableCell className="text-right">{shift.amount} شيكل</TableCell>
-                            <TableCell className="text-right">
-                              {shift.isPaid ? (
-                                <span className="text-green-600 flex items-center gap-1">
-                                  <CheckCircle className="h-4 w-4 ml-1" />
-                                  تم الدفع
-                                </span>
-                              ) : (
-                                <span className="text-amber-600 flex items-center gap-1">
-                                  <Clock className="h-4 w-4 ml-1" />
-                                  معلق
-                                </span>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
+                  <div className="overflow-x-auto">
+                    <Table className="border-none">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-right">الحالة</TableHead>
+                          <TableHead className="text-right">المبلغ</TableHead>
+                          <TableHead className="text-right">التفاصيل</TableHead>
+                          <TableHead className="text-right">التاريخ</TableHead>
+                          <TableHead className="text-right">اسم العامل</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {getRecentShifts().map(shift => {
+                          const worker = workers.find(w => w.id === shift.workerId) as ExtendedWorker;
+                          return (
+                            <TableRow key={shift.id}>
+                              <TableCell>
+                                {shift.isPaid ? (
+                                  <span className="text-green-600 flex items-center gap-1">
+                                    <CheckCircle className="h-4 w-4 ml-1" />
+                                    تم الدفع
+                                  </span>
+                                ) : (
+                                  <span className="text-amber-600 flex items-center gap-1">
+                                    <Clock className="h-4 w-4 ml-1" />
+                                    معلق
+                                  </span>
+                                )}
+                              </TableCell>
+                              <TableCell>{shift.amount} شيكل</TableCell>
+                              <TableCell>
+                                {shift.hours !== undefined
+                                  ? `${shift.hours} ساعة`
+                                  : `${shift.shifts} شفت`}
+                              </TableCell>
+                              <TableCell>{formatDate(shift.date)}</TableCell>
+                              <TableCell className="font-medium">{worker?.name}</TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
                 )}
               </CardContent>
             </Card>
             
             {/* All Work Sessions */}
             <Card className="md:col-span-3">
-              <CardHeader className="bg-olive-100 text-right">
-                <CardTitle>جميع جلسات العمل</CardTitle>
-                <CardDescription>سجل كامل لجميع جلسات العمل</CardDescription>
+              <CardHeader className="bg-olive-100">
+                <CardTitle className="text-right">جميع جلسات العمل</CardTitle>
+                <CardDescription className="text-right">سجل كامل لجميع جلسات العمل</CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 {workerShifts.length === 0 ? (
@@ -678,33 +727,22 @@ const WorkersManagement: React.FC = () => {
                     <Table className="border-none">
                       <TableHeader className="sticky top-0 bg-white">
                         <TableRow>
-                          <TableHead className="text-right">اسم العامل</TableHead>
-                          <TableHead className="text-right">التاريخ</TableHead>
-                          <TableHead className="text-right">التفاصيل</TableHead>
-                          <TableHead className="text-right">نوع العمل</TableHead>
-                          <TableHead className="text-right">المبلغ</TableHead>
                           <TableHead className="text-right">الحالة</TableHead>
+                          <TableHead className="text-right">المبلغ</TableHead>
+                          <TableHead className="text-right">نوع العمل</TableHead>
+                          <TableHead className="text-right">التفاصيل</TableHead>
+                          <TableHead className="text-right">التاريخ</TableHead>
+                          <TableHead className="text-right">اسم العامل</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {[...workerShifts]
                           .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                           .map(shift => {
-                            const worker = workers.find(w => w.id === shift.workerId);
+                            const worker = workers.find(w => w.id === shift.workerId) as ExtendedWorker;
                             return (
                               <TableRow key={shift.id}>
-                                <TableCell className="font-medium text-right">{worker?.name}</TableCell>
-                                <TableCell className="text-right">{formatDate(shift.date)}</TableCell>
-                                <TableCell className="text-right">
-                                  {shift.hours !== undefined
-                                    ? `${shift.hours} ساعة`
-                                    : `${shift.shifts} شفت`}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  {worker?.type === 'hourly' ? 'بالساعة' : 'بالشفت'}
-                                </TableCell>
-                                <TableCell className="text-right">{shift.amount} شيكل</TableCell>
-                                <TableCell className="text-right">
+                                <TableCell>
                                   {shift.isPaid ? (
                                     <span className="text-green-600 flex items-center gap-1">
                                       <CheckCircle className="h-4 w-4 ml-1" />
@@ -717,6 +755,17 @@ const WorkersManagement: React.FC = () => {
                                     </span>
                                   )}
                                 </TableCell>
+                                <TableCell>{shift.amount} شيكل</TableCell>
+                                <TableCell>
+                                  {worker?.type === 'hourly' ? 'بالساعة' : 'بالشفت'}
+                                </TableCell>
+                                <TableCell>
+                                  {shift.hours !== undefined
+                                    ? `${shift.hours} ساعة`
+                                    : `${shift.shifts} شفت`}
+                                </TableCell>
+                                <TableCell>{formatDate(shift.date)}</TableCell>
+                                <TableCell className="font-medium">{worker?.name}</TableCell>
                               </TableRow>
                             );
                           })}
@@ -732,101 +781,64 @@ const WorkersManagement: React.FC = () => {
         {/* Salary Payments Tab */}
         <TabsContent value="salary-payments" className="space-y-6">
           <Card>
-            <CardHeader className="bg-olive-500 text-white text-right">
-              <CardTitle>سجل المدفوعات</CardTitle>
-              <CardDescription className="text-olive-50">
+            <CardHeader className="bg-olive-500 text-white">
+              <CardTitle className="text-right">سجل المدفوعات</CardTitle>
+              <CardDescription className="text-olive-50 text-right">
                 سجل مدفوعات العمال
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-right">اسم العامل</TableHead>
-                    <TableHead className="text-right">إجمالي المستحقات</TableHead>
-                    <TableHead className="text-right">إجمالي المدفوعات</TableHead>
-                    <TableHead className="text-right">المبلغ المتبقي</TableHead>
-                    <TableHead className="text-right">الإجراءات</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {workers.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-4">
-                        لا يوجد عمال مسجلين
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    workers.map(worker => {
-                      const totalDue = getWorkerTotalDue(worker.id);
-                      const totalPaid = getWorkerPaidAmount(worker.id);
-                      const balance = getWorkerBalance(worker.id);
-                      return (
-                        <TableRow key={worker.id}>
-                          <TableCell className="font-medium text-right">{worker.name}</TableCell>
-                          <TableCell className="text-right">{totalDue} شيكل</TableCell>
-                          <TableCell className="text-right">{totalPaid} شيكل</TableCell>
-                          <TableCell className={`text-right ${balance > 0 ? 'text-red-600 font-bold' : 'text-green-600'}`}>
-                            {balance} شيكل
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="flex items-center gap-1" 
-                              onClick={() => openPaymentDialog(worker)}
-                              disabled={balance <= 0}
-                            >
-                              <DollarSign className="h-4 w-4 ml-1" />
-                              دفع الراتب
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="bg-olive-100 text-right">
-              <CardTitle>سجل الدفعات السابقة</CardTitle>
-              <CardDescription>تاريخ جميع الدفعات</CardDescription>
-            </CardHeader>
-            <CardContent className="p-0 max-h-[500px] overflow-y-auto">
-              {workerPayments.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <p>لا يوجد دفعات مسجلة</p>
-                </div>
-              ) : (
+              <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader className="sticky top-0 bg-white">
+                  <TableHeader>
                     <TableRow>
+                      <TableHead className="text-right">الإجراءات</TableHead>
+                      <TableHead className="text-right">المبلغ المتبقي</TableHead>
+                      <TableHead className="text-right">إجمالي المدفوعات</TableHead>
+                      <TableHead className="text-right">إجمالي المستحقات</TableHead>
                       <TableHead className="text-right">اسم العامل</TableHead>
-                      <TableHead className="text-right">التاريخ</TableHead>
-                      <TableHead className="text-right">المبلغ</TableHead>
-                      <TableHead className="text-right">ملاحظات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {[...workerPayments]
-                      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                      .map(payment => {
-                        const worker = workers.find(w => w.id === payment.workerId);
+                    {workers.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-4">
+                          لا يوجد عمال مسجلين
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      workers.map(worker => {
+                        const w = worker as ExtendedWorker;
+                        const totalDue = getWorkerTotalDue(worker.id);
+                        const totalPaid = getWorkerPaidAmount(worker.id);
+                        const balance = getWorkerBalance(worker.id);
                         return (
-                          <TableRow key={payment.id}>
-                            <TableCell className="font-medium text-right">{worker?.name}</TableCell>
-                            <TableCell className="text-right">{formatDate(payment.date)}</TableCell>
-                            <TableCell className="text-right">{payment.amount} شيكل</TableCell>
-                            <TableCell className="text-right">{payment.notes || '-'}</TableCell>
+                          <TableRow key={worker.id}>
+                            <TableCell>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="flex items-center gap-1" 
+                                onClick={() => openPaymentDialog(w)}
+                                disabled={balance <= 0}
+                              >
+                                <DollarSign className="h-4 w-4 ml-1" />
+                                دفع الراتب
+                              </Button>
+                            </TableCell>
+                            <TableCell className={balance > 0 ? 'text-red-600 font-bold' : 'text-green-600'}>
+                              {balance} شيكل
+                            </TableCell>
+                            <TableCell>{totalPaid} شيكل</TableCell>
+                            <TableCell>{totalDue} شيكل</TableCell>
+                            <TableCell className="font-medium">{worker.name}</TableCell>
                           </TableRow>
                         );
-                      })}
+                      })
+                    )}
                   </TableBody>
                 </Table>
-              )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -834,50 +846,49 @@ const WorkersManagement: React.FC = () => {
       
       {/* Payment Dialog */}
       <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[500px]" dir="rtl">
           <DialogHeader>
-            <DialogTitle className="text-right">دفع الراتب</DialogTitle>
+            <DialogTitle className="text-right">تسجيل دفعة جديدة</DialogTitle>
             <DialogDescription className="text-right">
-              تسجيل دفعة جديدة للعامل {selectedPaymentWorker?.name}
+              {selectedPaymentWorker && (
+                <>
+                  <p className="text-lg font-bold mt-2">اسم العامل: {selectedPaymentWorker.name}</p>
+                  <p>المبلغ المستحق: {getWorkerBalance(selectedPaymentWorker.id)} شيكل</p>
+                </>
+              )}
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="paymentAmount" className="text-right col-span-1">
-                المبلغ
-              </Label>
-              <div className="col-span-3">
-                <Input
-                  id="paymentAmount"
-                  type="number"
-                  min="1"
-                  max={selectedPaymentWorker ? getWorkerBalance(selectedPaymentWorker.id) : 0}
-                  value={paymentAmount || ''}
-                  onChange={e => setPaymentAmount(Number(e.target.value))}
-                  className="text-right"
-                />
-              </div>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="paymentAmount" className="text-right block">المبلغ المراد دفعه (شيكل)</Label>
+              <Input
+                id="paymentAmount"
+                type="number"
+                min="0"
+                className="text-right"
+                value={paymentAmount}
+                onChange={e => setPaymentAmount(Number(e.target.value))}
+              />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="paymentNotes" className="text-right col-span-1">
-                ملاحظات
-              </Label>
-              <div className="col-span-3">
-                <Textarea
-                  id="paymentNotes"
-                  value={paymentNotes}
-                  onChange={e => setPaymentNotes(e.target.value)}
-                  className="text-right"
-                />
-              </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="paymentNotes" className="text-right block">ملاحظات (اختياري)</Label>
+              <Textarea
+                id="paymentNotes"
+                className="text-right"
+                placeholder="أي ملاحظات خاصة بالدفعة..."
+                value={paymentNotes}
+                onChange={e => setPaymentNotes(e.target.value)}
+              />
             </div>
           </div>
-          <DialogFooter className="flex flex-row-reverse justify-start gap-2">
-            <Button type="button" variant="outline" onClick={() => setShowPaymentDialog(false)}>
+          
+          <DialogFooter className="sm:justify-between">
+            <Button variant="outline" onClick={() => setShowPaymentDialog(false)}>
               إلغاء
             </Button>
-            <Button type="button" onClick={handleAddPayment}>
-              <DollarSign className="ml-2 h-4 w-4" />
+            <Button type="submit" className="bg-olive-600 hover:bg-olive-700" onClick={handleAddPayment}>
               تأكيد الدفع
             </Button>
           </DialogFooter>
