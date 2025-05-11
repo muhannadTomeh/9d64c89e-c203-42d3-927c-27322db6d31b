@@ -43,6 +43,7 @@ export function DatePicker({ date, setDate, className, locale = ar }: DatePicker
           onSelect={setDate}
           initialFocus
           locale={locale}
+          className="pointer-events-auto"
         />
       </PopoverContent>
     </Popover>

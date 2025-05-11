@@ -118,7 +118,7 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out'
 			},
 			fontFamily: {
-				arabic: ['var(--font-arabic)'],
+				arabic: ['Tajawal', 'sans-serif'],
 			}
 		}
 	},

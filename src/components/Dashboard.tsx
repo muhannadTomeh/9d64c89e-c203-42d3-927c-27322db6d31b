@@ -43,10 +43,9 @@ const Dashboard: React.FC = () => {
   const stats = getStatistics();
   
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">لوحة التحكم</h2>
-        <p className="text-gray-500">
+    <div className="space-y-6 font-arabic text-right">
+      <div className="flex justify-between items-center border-b pb-4 mb-6">
+        <p className="text-olive-600 font-medium">
           {new Date().toLocaleDateString('ar-EG', {
             weekday: 'long',
             year: 'numeric',
@@ -54,82 +53,83 @@ const Dashboard: React.FC = () => {
             day: 'numeric',
           })}
         </p>
+        <h2 className="text-2xl font-bold text-olive-800">لوحة التحكم</h2>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <Card className="bg-primary text-white">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <Card className="bg-white border-2 border-primary hover:shadow-md transition-shadow">
           <CardContent className="p-4 text-center">
-            <h3 className="text-lg font-bold mb-2">الزبائن في الطابور</h3>
-            <p className="text-3xl font-bold">{queueCustomers.length}</p>
+            <h3 className="text-lg font-bold mb-2 text-primary">الزبائن في الطابور</h3>
+            <p className="text-3xl font-bold text-primary">{queueCustomers.length}</p>
           </CardContent>
         </Card>
         
-        <Card className="bg-olive-600 text-white">
+        <Card className="bg-white border-2 border-olive-600 hover:shadow-md transition-shadow">
           <CardContent className="p-4 text-center">
-            <h3 className="text-lg font-bold mb-2">زيت اليوم</h3>
-            <p className="text-3xl font-bold">{todayOilTotal.toFixed(2)} كغم</p>
+            <h3 className="text-lg font-bold mb-2 text-olive-600">زيت اليوم</h3>
+            <p className="text-3xl font-bold text-olive-600">{todayOilTotal.toFixed(2)} كغم</p>
           </CardContent>
         </Card>
         
-        <Card className="bg-sand-600 text-white">
+        <Card className="bg-white border-2 border-sand-600 hover:shadow-md transition-shadow">
           <CardContent className="p-4 text-center">
-            <h3 className="text-lg font-bold mb-2">الزيت الكلي</h3>
-            <p className="text-3xl font-bold">{stats.totalOilProduced.toFixed(2)} كغم</p>
+            <h3 className="text-lg font-bold mb-2 text-sand-600">الزيت الكلي</h3>
+            <p className="text-3xl font-bold text-sand-600">{stats.totalOilProduced.toFixed(2)} كغم</p>
           </CardContent>
         </Card>
         
-        <Card className="bg-green-600 text-white">
+        <Card className="bg-white border-2 border-green-600 hover:shadow-md transition-shadow">
           <CardContent className="p-4 text-center">
-            <h3 className="text-lg font-bold mb-2">المخزون الحالي</h3>
-            <p className="text-3xl font-bold">{stats.currentOilStock.toFixed(2)} كغم</p>
+            <h3 className="text-lg font-bold mb-2 text-green-600">المخزون الحالي</h3>
+            <p className="text-3xl font-bold text-green-600">{stats.currentOilStock.toFixed(2)} كغم</p>
           </CardContent>
         </Card>
         
-        <Card className="bg-blue-600 text-white">
+        <Card className="bg-white border-2 border-blue-600 hover:shadow-md transition-shadow">
           <CardContent className="p-4 text-center">
-            <h3 className="text-lg font-bold mb-2">الكاش الحالي</h3>
-            <p className="text-3xl font-bold">{stats.currentCash.toFixed(2)} ₪</p>
+            <h3 className="text-lg font-bold mb-2 text-blue-600">الكاش الحالي</h3>
+            <p className="text-3xl font-bold text-blue-600">{stats.currentCash.toFixed(2)} ₪</p>
           </CardContent>
         </Card>
         
-        <Card className="bg-red-600 text-white">
+        <Card className="bg-white border-2 border-red-600 hover:shadow-md transition-shadow">
           <CardContent className="p-4 text-center">
-            <h3 className="text-lg font-bold mb-2">إجمالي المصاريف</h3>
-            <p className="text-3xl font-bold">{stats.totalExpenses.toFixed(2)} ₪</p>
+            <h3 className="text-lg font-bold mb-2 text-red-600">إجمالي المصاريف</h3>
+            <p className="text-3xl font-bold text-red-600">{stats.totalExpenses.toFixed(2)} ₪</p>
           </CardContent>
         </Card>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Constants Info */}
-        <Card className="overflow-hidden">
-          <div className="bg-olive-600 p-4 text-white font-bold">
-            <h3 className="text-lg">المعلومات الثابتة للموسم الحالي</h3>
+        <Card className="overflow-hidden bg-white hover:shadow-md transition-shadow">
+          <div className="bg-white border-b-2 border-olive-600 p-4">
+            <h3 className="text-lg font-bold text-olive-800 text-right">المعلومات الثابتة للموسم الحالي</h3>
           </div>
           <CardContent className="p-6 space-y-2">
             <div className="flex justify-between border-b pb-2">
-              <span className="font-semibold">سعر بيع الزيت:</span>
               <span>{settings.oilSellPrice} شيكل/كغم</span>
+              <span className="font-semibold">سعر بيع الزيت:</span>
             </div>
             <div className="flex justify-between border-b pb-2">
-              <span className="font-semibold">سعر شراء الزيت:</span>
               <span>{settings.oilBuyPrice} شيكل/كغم</span>
+              <span className="font-semibold">سعر شراء الزيت:</span>
             </div>
             <div className="flex justify-between border-b pb-2">
-              <span className="font-semibold">نسبة الرد:</span>
               <span>{settings.oilReturnPercentage}%</span>
+              <span className="font-semibold">نسبة الرد:</span>
             </div>
             <div className="flex justify-between border-b pb-2">
-              <span className="font-semibold">سعر الرد النقدي:</span>
               <span>{settings.cashReturnPrice} شيكل/كغم</span>
+              <span className="font-semibold">سعر الرد النقدي:</span>
             </div>
             <div className="flex justify-between border-b pb-2">
-              <span className="font-semibold">سعر التنكة البلاستيك:</span>
               <span>{settings.tankPrices.plastic} شيكل</span>
+              <span className="font-semibold">سعر التنكة البلاستيك:</span>
             </div>
             <div className="flex justify-between">
-              <span className="font-semibold">سعر التنكة الحديد:</span>
               <span>{settings.tankPrices.metal} شيكل</span>
+              <span className="font-semibold">سعر التنكة الحديد:</span>
             </div>
             <Link
               to="/settings"
@@ -141,34 +141,34 @@ const Dashboard: React.FC = () => {
         </Card>
         
         {/* Statistics */}
-        <Card className="overflow-hidden">
-          <div className="bg-sand-600 p-4 text-white font-bold">
-            <h3 className="text-lg">إحصائيات اليوم</h3>
+        <Card className="overflow-hidden bg-white hover:shadow-md transition-shadow">
+          <div className="bg-white border-b-2 border-sand-600 p-4">
+            <h3 className="text-lg font-bold text-olive-800 text-right">إحصائيات اليوم</h3>
           </div>
           <CardContent className="p-6 space-y-2">
             <div className="flex justify-between border-b pb-2">
-              <span className="font-semibold">عدد الزبائن في الطابور:</span>
               <span>{queueCustomers.length}</span>
+              <span className="font-semibold">عدد الزبائن في الطابور:</span>
             </div>
             <div className="flex justify-between border-b pb-2">
-              <span className="font-semibold">عدد الفواتير المصدرة اليوم:</span>
               <span>{todayInvoices.length}</span>
+              <span className="font-semibold">عدد الفواتير المصدرة اليوم:</span>
             </div>
             <div className="flex justify-between border-b pb-2">
-              <span className="font-semibold">إجمالي الزيت المعصور اليوم:</span>
               <span>{todayOilTotal.toFixed(2)} كغم</span>
+              <span className="font-semibold">إجمالي الزيت المعصور اليوم:</span>
             </div>
             <div className="flex justify-between border-b pb-2">
-              <span className="font-semibold">إجمالي الرد بالزيت:</span>
               <span>{todayOilPaymentTotal.toFixed(2)} كغم</span>
+              <span className="font-semibold">إجمالي الرد بالزيت:</span>
             </div>
             <div className="flex justify-between">
-              <span className="font-semibold">إجمالي الرد النقدي:</span>
               <span>{todayCashTotal.toFixed(2)} شيكل</span>
+              <span className="font-semibold">إجمالي الرد النقدي:</span>
             </div>
             <div className="flex justify-between pt-2 border-t mt-2">
-              <span className="font-semibold">إجمالي عدد الزبائن:</span>
               <span>{totalCustomersCount}</span>
+              <span className="font-semibold">إجمالي عدد الزبائن:</span>
             </div>
           </CardContent>
         </Card>
@@ -177,7 +177,7 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Link 
           to="/queue"
-          className="bg-primary hover:bg-primary/90 text-white p-8 rounded-lg text-center shadow-md transition-transform hover:scale-105"
+          className="flex flex-col items-center justify-center bg-white border-2 border-primary hover:bg-primary/5 text-primary p-8 rounded-lg text-center shadow-sm transition-all hover:shadow-md"
         >
           <h3 className="text-xl font-bold mb-2">إدارة الطابور</h3>
           <p>إضافة وإدارة الزبائن في قائمة الانتظار</p>
@@ -185,7 +185,7 @@ const Dashboard: React.FC = () => {
         
         <Link 
           to="/invoices"
-          className="bg-olive-600 hover:bg-olive-700 text-white p-8 rounded-lg text-center shadow-md transition-transform hover:scale-105"
+          className="flex flex-col items-center justify-center bg-white border-2 border-olive-600 hover:bg-olive-50 text-olive-600 p-8 rounded-lg text-center shadow-sm transition-all hover:shadow-md"
         >
           <h3 className="text-xl font-bold mb-2">حساب الرد</h3>
           <p>حساب وإصدار فواتير للزبائن الحاليين</p>
@@ -193,7 +193,7 @@ const Dashboard: React.FC = () => {
         
         <Link 
           to="/customers"
-          className="bg-sand-600 hover:bg-sand-700 text-white p-8 rounded-lg text-center shadow-md transition-transform hover:scale-105"
+          className="flex flex-col items-center justify-center bg-white border-2 border-sand-600 hover:bg-sand-50 text-sand-600 p-8 rounded-lg text-center shadow-sm transition-all hover:shadow-md"
         >
           <h3 className="text-xl font-bold mb-2">سجل الزبائن</h3>
           <p>عرض سجل الزبائن وتفاصيل المعاملات السابقة</p>
@@ -203,7 +203,7 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Link 
           to="/workers"
-          className="bg-blue-600 hover:bg-blue-700 text-white p-8 rounded-lg text-center shadow-md transition-transform hover:scale-105"
+          className="flex flex-col items-center justify-center bg-white border-2 border-blue-600 hover:bg-blue-50 text-blue-600 p-8 rounded-lg text-center shadow-sm transition-all hover:shadow-md"
         >
           <h3 className="text-xl font-bold mb-2">إدارة العمال</h3>
           <p>تسجيل العمال وحساب أجورهم ودفعاتهم</p>
@@ -211,7 +211,7 @@ const Dashboard: React.FC = () => {
         
         <Link 
           to="/trading"
-          className="bg-green-600 hover:bg-green-700 text-white p-8 rounded-lg text-center shadow-md transition-transform hover:scale-105"
+          className="flex flex-col items-center justify-center bg-white border-2 border-green-600 hover:bg-green-50 text-green-600 p-8 rounded-lg text-center shadow-sm transition-all hover:shadow-md"
         >
           <h3 className="text-xl font-bold mb-2">بيع وشراء الزيت</h3>
           <p>إدارة عمليات البيع والشراء ومتابعة المخزون</p>
@@ -219,7 +219,7 @@ const Dashboard: React.FC = () => {
         
         <Link 
           to="/expenses"
-          className="bg-red-600 hover:bg-red-700 text-white p-8 rounded-lg text-center shadow-md transition-transform hover:scale-105"
+          className="flex flex-col items-center justify-center bg-white border-2 border-red-600 hover:bg-red-50 text-red-600 p-8 rounded-lg text-center shadow-sm transition-all hover:shadow-md"
         >
           <h3 className="text-xl font-bold mb-2">المصاريف اليومية</h3>
           <p>تسجيل وتتبع المصاريف اليومية للمعصرة</p>

@@ -8,7 +8,9 @@ const Index = () => {
   return (
     <MillProvider>
       <Layout>
-        <Dashboard />
+        <div className="font-arabic">
+          <Dashboard />
+        </div>
       </Layout>
     </MillProvider>
   );

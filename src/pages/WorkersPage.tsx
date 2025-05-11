@@ -8,7 +8,10 @@ const WorkersPage = () => {
   return (
     <MillProvider>
       <Layout>
-        <WorkersManagement />
+        <div className="font-arabic">
+          <h1 className="text-2xl font-bold mb-6 text-right text-olive-800">إدارة العمال</h1>
+          <WorkersManagement />
+        </div>
       </Layout>
     </MillProvider>
   );
