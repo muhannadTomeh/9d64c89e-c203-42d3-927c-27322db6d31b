@@ -9,7 +9,7 @@ const WorkersPage = () => {
     <MillProvider>
       <Layout>
         <div className="font-arabic">
-          <h1 className="text-2xl font-bold mb-6 text-right text-olive-800">إدارة العمال</h1>
+          <h1 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-right text-olive-800">إدارة العمال</h1>
           <WorkersManagement />
         </div>
       </Layout>

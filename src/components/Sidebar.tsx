@@ -17,12 +17,14 @@ type NavItemProps = {
   label: string;
   icon: React.ReactNode;
   isActive: boolean;
+  onClick?: () => void;
 };
 
 // Individual navigation item component
-const NavItem: React.FC<NavItemProps> = ({ to, label, icon, isActive }) => (
+const NavItem: React.FC<NavItemProps> = ({ to, label, icon, isActive, onClick }) => (
   <Link
     to={to}
+    onClick={onClick}
     className={`flex items-center gap-3 py-3 px-4 mb-1 rounded-lg transition-colors ${
       isActive
         ? 'bg-olive-600 text-white font-bold'
@@ -36,7 +38,12 @@ const NavItem: React.FC<NavItemProps> = ({ to, label, icon, isActive }) => (
   </Link>
 );
 
-const Sidebar: React.FC = () => {
+type SidebarProps = {
+  isOpen: boolean;
+  onClose: () => void;
+};
+
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -52,31 +59,64 @@ const Sidebar: React.FC = () => {
   ];
 
   return (
-    <div className="h-screen fixed top-0 right-0 w-64 bg-white shadow-lg py-6 px-3 overflow-y-auto z-10">
-      {/* Logo/Header */}
-      <div className="text-center mb-6 px-4">
-        <h1 className="text-xl font-bold text-olive-800">إدارة المعصرة</h1>
-        <div className="h-1 w-16 bg-olive-500 mx-auto mt-2 rounded-full"></div>
+    <>
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block h-screen fixed top-0 right-0 w-64 bg-white shadow-lg py-6 px-3 overflow-y-auto z-10">
+        {/* Logo/Header */}
+        <div className="text-center mb-6 px-4">
+          <h1 className="text-xl font-bold text-olive-800">إدارة المعصرة</h1>
+          <div className="h-1 w-16 bg-olive-500 mx-auto mt-2 rounded-full"></div>
+        </div>
+        
+        {/* Navigation Items */}
+        <nav className="flex flex-col">
+          {navItems.map((item) => (
+            <NavItem
+              key={item.path}
+              to={item.path}
+              label={item.label}
+              icon={item.icon}
+              isActive={currentPath === item.path}
+            />
+          ))}
+        </nav>
+        
+        {/* Footer */}
+        <div className="mt-auto text-center pt-6 text-olive-600 text-xs">
+          <p>جميع الحقوق محفوظة &copy; {new Date().getFullYear()}</p>
+        </div>
       </div>
-      
-      {/* Navigation Items */}
-      <nav className="flex flex-col">
-        {navItems.map((item) => (
-          <NavItem
-            key={item.path}
-            to={item.path}
-            label={item.label}
-            icon={item.icon}
-            isActive={currentPath === item.path}
-          />
-        ))}
-      </nav>
-      
-      {/* Footer */}
-      <div className="mt-auto text-center pt-6 text-olive-600 text-xs">
-        <p>جميع الحقوق محفوظة &copy; {new Date().getFullYear()}</p>
+
+      {/* Mobile Sidebar */}
+      <div className={`md:hidden fixed top-0 right-0 h-full w-80 bg-white shadow-lg py-6 px-3 overflow-y-auto z-30 transform transition-transform duration-300 ${
+        isOpen ? 'translate-x-0' : 'translate-x-full'
+      }`}>
+        {/* Logo/Header */}
+        <div className="text-center mb-6 px-4 mt-12">
+          <h1 className="text-xl font-bold text-olive-800">إدارة المعصرة</h1>
+          <div className="h-1 w-16 bg-olive-500 mx-auto mt-2 rounded-full"></div>
+        </div>
+        
+        {/* Navigation Items */}
+        <nav className="flex flex-col">
+          {navItems.map((item) => (
+            <NavItem
+              key={item.path}
+              to={item.path}
+              label={item.label}
+              icon={item.icon}
+              isActive={currentPath === item.path}
+              onClick={onClose}
+            />
+          ))}
+        </nav>
+        
+        {/* Footer */}
+        <div className="mt-auto text-center pt-6 text-olive-600 text-xs">
+          <p>جميع الحقوق محفوظة &copy; {new Date().getFullYear()}</p>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
