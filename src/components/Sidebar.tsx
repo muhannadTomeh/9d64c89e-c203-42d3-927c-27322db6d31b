@@ -25,16 +25,16 @@ const NavItem: React.FC<NavItemProps> = ({ to, label, icon, isActive, onClick })
   <Link
     to={to}
     onClick={onClick}
-    className={`flex items-center gap-3 py-3 px-4 mb-1 rounded-lg transition-colors ${
+    className={`flex items-center gap-3 py-3 px-4 mb-1 rounded-lg transition-colors text-right ${
       isActive
         ? 'bg-olive-600 text-white font-bold'
         : 'text-olive-700 hover:bg-olive-100'
     }`}
   >
-    <div className="w-6 h-6 flex items-center justify-center">
+    <span className="text-sm">{label}</span>
+    <div className="w-6 h-6 flex items-center justify-center mr-auto">
       {icon}
     </div>
-    <span className="text-sm">{label}</span>
   </Link>
 );
 
@@ -52,7 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { path: '/queue', label: 'إدارة الطابور', icon: <Clock size={20} /> },
     { path: '/invoices', label: 'حساب الرد', icon: <FileText size={20} /> },
     { path: '/customers', label: 'سجل الزبائن', icon: <UsersRound size={20} /> },
-    { path: '/workers', label: 'العمال', icon: <UsersRound size={20} /> },
+    { path: '/workers', label: 'إدارة العمال', icon: <UsersRound size={20} /> },
     { path: '/trading', label: 'بيع وشراء الزيت', icon: <ShoppingCart size={20} /> },
     { path: '/expenses', label: 'المصاريف', icon: <Wallet size={20} /> },
     { path: '/settings', label: 'الإعدادات', icon: <Settings size={20} /> },
@@ -61,10 +61,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className="hidden md:block h-screen fixed top-0 right-0 w-64 bg-white shadow-lg py-6 px-3 overflow-y-auto z-10">
+      <div className="hidden md:block h-screen fixed top-0 right-0 w-64 bg-white shadow-lg py-6 px-3 overflow-y-auto z-10 font-arabic">
         {/* Logo/Header */}
         <div className="text-center mb-6 px-4">
-          <h1 className="text-xl font-bold text-olive-800">إدارة المعصرة</h1>
+          <h1 className="text-xl font-bold text-olive-800 text-right">إدارة المعصرة</h1>
           <div className="h-1 w-16 bg-olive-500 mx-auto mt-2 rounded-full"></div>
         </div>
         
@@ -88,12 +88,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       </div>
 
       {/* Mobile Sidebar */}
-      <div className={`md:hidden fixed top-0 right-0 h-full w-80 bg-white shadow-lg py-6 px-3 overflow-y-auto z-30 transform transition-transform duration-300 ${
+      <div className={`md:hidden fixed top-0 right-0 h-full w-80 bg-white shadow-lg py-6 px-3 overflow-y-auto z-30 transform transition-transform duration-300 font-arabic ${
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}>
         {/* Logo/Header */}
         <div className="text-center mb-6 px-4 mt-12">
-          <h1 className="text-xl font-bold text-olive-800">إدارة المعصرة</h1>
+          <h1 className="text-xl font-bold text-olive-800 text-right">إدارة المعصرة</h1>
           <div className="h-1 w-16 bg-olive-500 mx-auto mt-2 rounded-full"></div>
         </div>
         

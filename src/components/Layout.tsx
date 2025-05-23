@@ -11,7 +11,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen bg-olive-50" dir="rtl">
+    <div className="min-h-screen bg-olive-50 font-arabic" dir="rtl">
       {/* Mobile Menu Button */}
       <div className="md:hidden fixed top-4 right-4 z-50">
         <button
@@ -37,12 +37,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       {/* Sidebar */}
       <Sidebar isOpen={isMobileMenuOpen} onClose={toggleMobileMenu} />
       
-      {/* Main content - responsive margins */}
+      {/* Main content - responsive margins for RTL */}
       <div className="md:mr-64 transition-all duration-300">
         {/* Header */}
         <header className="bg-white py-4 px-4 md:px-6 shadow-sm">
           <div className="flex justify-between items-center">
-            <h2 className="text-sm md:text-lg font-bold text-olive-800">
+            <h2 className="text-sm md:text-lg font-bold text-olive-800 text-right">
               {new Date().toLocaleDateString('ar-EG', {
                 weekday: 'long',
                 year: 'numeric',
