@@ -197,7 +197,7 @@ const WorkersManagement: React.FC = () => {
     return [...workerShifts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
   };
   return <div className="space-y-6 font-arabic" dir="rtl">
-      <h2 className="text-2xl font-bold text-right">إدارة العمال</h2>
+      
       
       <Tabs defaultValue="worker-list" className="w-full" dir="rtl">
         <TabsList dir="rtl" className="flex flex-row-reverse w-full justify-between text-right\n">
