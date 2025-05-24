@@ -6,80 +6,118 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useMillContext } from '@/context/MillContext';
 import { Invoice } from '@/types';
-import { ChevronRight, FileText } from 'lucide-react';
+import { ChevronDown, ChevronUp, FileText, Phone, User, Calendar, Droplets } from 'lucide-react';
+import { format } from 'date-fns';
+import { ar } from 'date-fns/locale';
 
 const CustomerInvoiceDetails: React.FC<{ invoice: Invoice }> = ({ invoice }) => {
   const date = new Date(invoice.date);
   
   return (
-    <Card className="mb-4 border border-olive-200">
+    <Card className="mb-4 border border-olive-200 shadow-sm">
       <CardContent className="p-4">
-        <div className="flex justify-between items-center mb-2">
-          <h4 className="font-bold">فاتورة رقم: {invoice.id.split('-')[1]}</h4>
-          <span className="text-sm text-olive-600">
-            {date.toLocaleDateString('ar-EG')} {date.toLocaleTimeString('ar-EG', {
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
-          </span>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-2 text-sm mb-2">
-          <div><span className="font-semibold">كمية الزيت:</span> {invoice.oilAmount} كغم</div>
-          <div>
-            <span className="font-semibold">طريقة الدفع:</span>{' '}
-            {invoice.paymentMethod === 'oil' && 'دفع بالزيت'}
-            {invoice.paymentMethod === 'cash' && 'دفع نقداً'}
-            {invoice.paymentMethod === 'mixed' && 'دفع مختلط'}
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center gap-2">
+            <FileText className="h-5 w-5 text-olive-600" />
+            <h4 className="font-bold text-olive-800">فاتورة رقم: #{invoice.id.split('-')[1]}</h4>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-olive-600">
+            <Calendar className="h-4 w-4" />
+            <span>
+              {format(date, 'dd MMM yyyy - HH:mm', { locale: ar })}
+            </span>
           </div>
         </div>
         
-        <div className="text-sm bg-olive-50 p-3 rounded mb-2">
-          <h5 className="font-semibold mb-1">تفاصيل الدفع:</h5>
-          {invoice.paymentMethod === 'oil' && (
-            <>
-              <div>الرد (زيت): {invoice.returnAmount.oil.toFixed(2)} كغم</div>
-              <div>ثمن التنكات (زيت): {invoice.tanksPayment.oil.toFixed(2)} كغم</div>
-              <div className="font-bold mt-1">الإجمالي: {invoice.total.oil.toFixed(2)} كغم زيت</div>
-            </>
-          )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Droplets className="h-4 w-4 text-olive-600" />
+              <span className="font-semibold">كمية الزيت:</span> 
+              <span className="font-bold text-olive-800">{invoice.oilAmount} كغم</span>
+            </div>
+            <div>
+              <span className="font-semibold">طريقة الدفع:</span>{' '}
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                invoice.paymentMethod === 'oil' ? 'bg-green-100 text-green-800' :
+                invoice.paymentMethod === 'cash' ? 'bg-blue-100 text-blue-800' :
+                'bg-purple-100 text-purple-800'
+              }`}>
+                {invoice.paymentMethod === 'oil' && 'دفع بالزيت'}
+                {invoice.paymentMethod === 'cash' && 'دفع نقداً'}
+                {invoice.paymentMethod === 'mixed' && 'دفع مختلط'}
+              </span>
+            </div>
+          </div>
           
-          {invoice.paymentMethod === 'cash' && (
-            <>
-              <div>الرد (نقداً): {invoice.returnAmount.cash.toFixed(2)} شيكل</div>
-              <div>ثمن التنكات: {invoice.tanksPayment.cash.toFixed(2)} شيكل</div>
-              <div className="font-bold mt-1">الإجمالي: {invoice.total.cash.toFixed(2)} شيكل</div>
-            </>
-          )}
-          
-          {invoice.paymentMethod === 'mixed' && (
-            <>
-              <div>الرد (زيت): {invoice.returnAmount.oil.toFixed(2)} كغم</div>
-              <div>ثمن التنكات (نقداً): {invoice.tanksPayment.cash.toFixed(2)} شيكل</div>
-              <div className="font-bold mt-1">
-                الإجمالي: {invoice.total.oil.toFixed(2)} كغم زيت + {invoice.total.cash.toFixed(2)} شيكل
-              </div>
-            </>
-          )}
+          <div className="space-y-2">
+            <div>
+              <span className="font-semibold">التنكات:</span>{' '}
+              {invoice.tanks.length === 0 ? (
+                <span className="text-gray-500">لا يوجد</span>
+              ) : (
+                <div className="inline-flex gap-2">
+                  {invoice.tanks.map((tank, index) => (
+                    <span key={index} className="bg-olive-100 text-olive-800 px-2 py-1 rounded text-xs">
+                      {tank.count} {tank.type === 'plastic' ? 'بلاستيك' : 'حديد'}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
         
-        <div className="text-sm">
-          <span className="font-semibold">التنكات:</span>{' '}
-          {invoice.tanks.length === 0 ? (
-            'لا يوجد'
-          ) : (
-            invoice.tanks.map((tank, index) => (
-              <span key={index}>
-                {tank.count} {tank.type === 'plastic' ? 'بلاستيك' : 'حديد'}
-                {index < invoice.tanks.length - 1 ? ' + ' : ''}
-              </span>
-            ))
-          )}
+        <div className="bg-olive-50 p-4 rounded-lg border border-olive-200">
+          <h5 className="font-semibold mb-3 text-olive-800 flex items-center gap-2">
+            <DollarSign className="h-4 w-4" />
+            تفاصيل الدفع
+          </h5>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {invoice.paymentMethod === 'oil' && (
+              <>
+                <div className="space-y-1">
+                  <div>الرد (زيت): <span className="font-medium">{invoice.returnAmount.oil.toFixed(2)} كغم</span></div>
+                  <div>ثمن التنكات (زيت): <span className="font-medium">{invoice.tanksPayment.oil.toFixed(2)} كغم</span></div>
+                </div>
+                <div className="bg-white p-3 rounded border">
+                  <div className="font-bold text-olive-800">الإجمالي: {invoice.total.oil.toFixed(2)} كغم زيت</div>
+                </div>
+              </>
+            )}
+            
+            {invoice.paymentMethod === 'cash' && (
+              <>
+                <div className="space-y-1">
+                  <div>الرد (نقداً): <span className="font-medium">{invoice.returnAmount.cash.toFixed(2)} شيكل</span></div>
+                  <div>ثمن التنكات: <span className="font-medium">{invoice.tanksPayment.cash.toFixed(2)} شيكل</span></div>
+                </div>
+                <div className="bg-white p-3 rounded border">
+                  <div className="font-bold text-olive-800">الإجمالي: {invoice.total.cash.toFixed(2)} شيكل</div>
+                </div>
+              </>
+            )}
+            
+            {invoice.paymentMethod === 'mixed' && (
+              <>
+                <div className="space-y-1">
+                  <div>الرد (زيت): <span className="font-medium">{invoice.returnAmount.oil.toFixed(2)} كغم</span></div>
+                  <div>ثمن التنكات (نقداً): <span className="font-medium">{invoice.tanksPayment.cash.toFixed(2)} شيكل</span></div>
+                </div>
+                <div className="bg-white p-3 rounded border">
+                  <div className="font-bold text-olive-800">
+                    الإجمالي: {invoice.total.oil.toFixed(2)} كغم زيت + {invoice.total.cash.toFixed(2)} شيكل
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
         
         {invoice.notes && (
-          <div className="text-sm mt-2">
-            <span className="font-semibold">ملاحظات:</span> {invoice.notes}
+          <div className="mt-4 p-3 bg-gray-50 rounded border-r-4 border-olive-500">
+            <span className="font-semibold text-gray-700">ملاحظات:</span>
+            <p className="text-gray-600 mt-1">{invoice.notes}</p>
           </div>
         )}
       </CardContent>
@@ -126,73 +164,130 @@ const CustomersHistory: React.FC = () => {
   };
   
   return (
-    <div className="space-y-6 rtl">
-      <h2 className="text-2xl font-bold text-olive-800">سجل الزبائن</h2>
-      
-      <div className="flex">
-        <Input
-          placeholder="بحث عن زبون بالاسم أو رقم الهاتف..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-md text-right"
-        />
+    <div className="space-y-6 font-arabic" dir="rtl">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <h2 className="text-2xl font-bold text-olive-800 flex items-center gap-3">
+          <User className="h-8 w-8" />
+          سجل الزبائن
+        </h2>
+        
+        <div className="flex items-center gap-2 bg-white p-2 rounded-lg border border-olive-200 shadow-sm">
+          <Input
+            placeholder="بحث عن زبون بالاسم أو رقم الهاتف..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="max-w-md text-right border-0 focus-visible:ring-0"
+            dir="rtl"
+          />
+          <Search className="h-4 w-4 text-olive-500" />
+        </div>
       </div>
       
-      <div className="rounded-lg overflow-hidden border border-olive-200">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-right font-bold bg-olive-600 text-white">الاسم</TableHead>
-              <TableHead className="text-right font-bold bg-olive-600 text-white">رقم الهاتف</TableHead>
-              <TableHead className="text-right font-bold bg-olive-600 text-white">عدد الزيارات</TableHead>
-              <TableHead className="text-right font-bold bg-olive-600 text-white">إجمالي الزيت (كغم)</TableHead>
-              <TableHead className="text-right font-bold bg-olive-600 text-white">التفاصيل</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredCustomers.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-10 text-olive-600">
-                  لم يتم العثور على أي زبون بهذا الاسم
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredCustomers.map((customer) => (
-                <React.Fragment key={customer.id}>
-                  <TableRow className="border-b border-olive-200 hover:bg-olive-50/50">
-                    <TableCell className="text-right font-medium text-olive-800">{customer.name}</TableCell>
-                    <TableCell className="text-right text-olive-700">{customer.phone}</TableCell>
-                    <TableCell className="text-right text-olive-700">{customer.invoiceCount}</TableCell>
-                    <TableCell className="text-right text-olive-700">{customer.totalOil.toFixed(2)}</TableCell>
-                    <TableCell className="text-right">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="gap-2"
-                        onClick={() => toggleCustomerExpanded(customer.id)}
-                      >
-                        <FileText className="h-4 w-4" />
-                        عرض التفاصيل
-                        <ChevronRight className={`h-4 w-4 transition-transform ${expandedCustomerId === customer.id ? 'rotate-90' : ''}`} />
-                      </Button>
+      <Card className="shadow-lg">
+        <CardHeader className="bg-olive-600 text-white">
+          <h3 className="text-lg font-semibold text-right">قائمة الزبائن</h3>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-olive-50">
+                  <TableHead className="text-right font-bold text-olive-800 w-[250px]">معلومات الزبون</TableHead>
+                  <TableHead className="text-right font-bold text-olive-800">عدد الزيارات</TableHead>
+                  <TableHead className="text-right font-bold text-olive-800">إجمالي الزيت (كغم)</TableHead>
+                  <TableHead className="text-right font-bold text-olive-800">آخر زيارة</TableHead>
+                  <TableHead className="text-right font-bold text-olive-800 w-[120px]">الإجراءات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredCustomers.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-12 text-olive-600">
+                      <div className="flex flex-col items-center gap-3">
+                        <User className="h-12 w-12 text-olive-300" />
+                        <p className="text-lg">لم يتم العثور على أي زبون</p>
+                        {searchTerm && (
+                          <p className="text-sm text-gray-500">جرب البحث بكلمات مختلفة</p>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
-                  {expandedCustomerId === customer.id && (
-                    <TableRow>
-                      <TableCell colSpan={5} className="bg-olive-50/50 px-6 py-4">
-                        <h4 className="font-bold text-lg mb-4 text-olive-800">سجل الفواتير:</h4>
-                        {customer.invoices.map((invoice) => (
-                          <CustomerInvoiceDetails key={invoice.id} invoice={invoice} />
-                        ))}
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </React.Fragment>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                ) : (
+                  filteredCustomers.map((customer) => (
+                    <React.Fragment key={customer.id}>
+                      <TableRow className={`border-b border-olive-100 hover:bg-olive-50/50 transition-colors ${
+                        expandedCustomerId === customer.id ? 'bg-olive-50' : ''
+                      }`}>
+                        <TableCell className="text-right">
+                          <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2">
+                              <User className="h-4 w-4 text-olive-600" />
+                              <span className="font-medium text-olive-800">{customer.name}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                              <Phone className="h-3 w-3" />
+                              <span>{customer.phone}</span>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <span className="bg-olive-100 text-olive-800 px-3 py-1 rounded-full text-sm font-medium">
+                            {customer.invoiceCount}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center gap-2">
+                            <Droplets className="h-4 w-4 text-blue-500" />
+                            <span className="font-semibold text-olive-700">{customer.totalOil.toFixed(2)}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right text-sm text-gray-600">
+                          {format(new Date(customer.latestInvoice.date), 'dd MMM yyyy', { locale: ar })}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="gap-2 border-olive-200 hover:bg-olive-50"
+                            onClick={() => toggleCustomerExpanded(customer.id)}
+                          >
+                            <span>التفاصيل</span>
+                            {expandedCustomerId === customer.id ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                      {expandedCustomerId === customer.id && (
+                        <TableRow>
+                          <TableCell colSpan={5} className="bg-olive-50/30 px-6 py-6">
+                            <div className="space-y-4">
+                              <div className="flex items-center gap-3 mb-4">
+                                <FileText className="h-5 w-5 text-olive-600" />
+                                <h4 className="font-bold text-lg text-olive-800">سجل الفواتير - {customer.name}</h4>
+                                <span className="bg-olive-200 text-olive-800 px-2 py-1 rounded text-sm">
+                                  {customer.invoices.length} فاتورة
+                                </span>
+                              </div>
+                              <div className="max-h-[600px] overflow-y-auto space-y-4">
+                                {customer.invoices.map((invoice) => (
+                                  <CustomerInvoiceDetails key={invoice.id} invoice={invoice} />
+                                ))}
+                              </div>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </React.Fragment>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
