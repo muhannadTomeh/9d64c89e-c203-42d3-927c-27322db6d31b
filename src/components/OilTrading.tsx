@@ -150,7 +150,7 @@ const OilTrading: React.FC = () => {
           </CardHeader>
           <CardContent className="p-0">
             <Tabs defaultValue="all">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-3  ">
                 <TabsTrigger value="all">الكل</TabsTrigger>
                 <TabsTrigger value="sell">عمليات البيع</TabsTrigger>
                 <TabsTrigger value="buy">عمليات الشراء</TabsTrigger>
@@ -161,8 +161,8 @@ const OilTrading: React.FC = () => {
                     <p>لا يوجد عمليات مسجلة</p>
                   </div> : <div className="space-y-4 max-h-[400px] overflow-y-auto">
                     {sortedTrades.map(trade => <Card key={trade.id} className={`border ${trade.type === 'sell' ? 'border-green-200' : 'border-blue-200'}`}>
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-center mb-2">
+                        <CardContent className="p-4  text-right\n">
+                          <div className=" flex flex-row-reverse\n">
                             <h4 className={`font-bold text-lg ${trade.type === 'sell' ? 'text-green-600' : 'text-blue-600'}`}>
                               {trade.type === 'sell' ? 'بيع' : 'شراء'} زيت
                             </h4>
