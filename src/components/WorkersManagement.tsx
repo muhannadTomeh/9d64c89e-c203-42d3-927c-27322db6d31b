@@ -209,7 +209,7 @@ const WorkersManagement: React.FC = () => {
         
         {/* Workers List Tab */}
         <TabsContent value="worker-list" className="space-y-6">
-          <div className="flex flex-row-reverse items-center pb-4\n ">
+          <div className="flex flex-row justify-between items-center pb-4">
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" className="bg-olive-700 text-white hover:bg-olive-800">
                 <X className="ml-2 h-4 w-4" />
