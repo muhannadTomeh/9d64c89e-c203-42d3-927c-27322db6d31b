@@ -200,16 +200,16 @@ const WorkersManagement: React.FC = () => {
       <h2 className="text-2xl font-bold text-right">إدارة العمال</h2>
       
       <Tabs defaultValue="worker-list" dir="rtl" className="w-full ">
-        <TabsList dir="rtl" className="grid w-full grid-cols-4 text-right flex flex-row-reverse\n">
+        <TabsList className="grid w-full grid-cols-4 text-right" dir="rtl">
           <TabsTrigger value="worker-list" className="text-right order-4">قائمة العمال</TabsTrigger>
-          <TabsTrigger value="add-worker" className="text-right order-3 ">إضافة عامل</TabsTrigger>
+          <TabsTrigger value="add-worker" className="text-right order-3">إضافة عامل</TabsTrigger>
           <TabsTrigger value="work-sessions" className="text-right order-2">جلسات العمل</TabsTrigger>
           <TabsTrigger value="salary-payments" className="text-right order-1">سجل المدفوعات</TabsTrigger>
         </TabsList>
         
         {/* Workers List Tab */}
         <TabsContent value="worker-list" className="space-y-6">
-          <div className="flex flex-row justify-between items-center pb-4   \\n flex flex-row-reverse">
+          <div className="flex flex-row justify-between items-center pb-4   \nflex flex-row-reverse\n">
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" className="bg-olive-700 text-white hover:bg-olive-800">
                 <X className="ml-2 h-4 w-4" />
@@ -250,7 +250,7 @@ const WorkersManagement: React.FC = () => {
               </div>
             </div>
             
-            <div className="flex justify-between flex flex-row-reverse\\n flex flex-row-reverse\n">
+            <div className="flex justify-between flex flex-row-reverse\n">
               <Button variant="outline" tabIndex={6}>
                 إلغاء
               </Button>
