@@ -463,7 +463,7 @@ const WorkersManagement: React.FC = () => {
                           <TableHead className="text-right">التاريخ</TableHead>
                           <TableHead className="text-right">التفاصيل</TableHead>
                           <TableHead className="text-right">المبلغ</TableHead>
-                          <TableHead className="text-right">الحالة</TableHead>
+                          
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -476,15 +476,7 @@ const WorkersManagement: React.FC = () => {
                                 {shift.hours !== undefined ? `${shift.hours} ساعة` : `${shift.shifts} شفت`}
                               </TableCell>
                               <TableCell className="text-right">{shift.amount} شيكل</TableCell>
-                              <TableCell className="text-right">
-                                {shift.isPaid ? <span className="text-green-600 flex items-center gap-1 justify-end">
-                                    تم الدفع
-                                    <CheckCircle className="h-4 w-4 ml-1" />
-                                  </span> : <span className="text-amber-600 flex items-center gap-1 justify-end">
-                                    معلق
-                                    <Clock className="h-4 w-4 ml-1" />
-                                  </span>}
-                              </TableCell>
+                              
                             </TableRow>;
                     })}
                       </TableBody>
@@ -510,7 +502,7 @@ const WorkersManagement: React.FC = () => {
                           <TableHead className="text-right">التفاصيل</TableHead>
                           <TableHead className="text-right">نوع العمل</TableHead>
                           <TableHead className="text-right">المبلغ</TableHead>
-                          <TableHead className="text-right">الحالة</TableHead>
+                          
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -526,15 +518,7 @@ const WorkersManagement: React.FC = () => {
                                   {worker?.type === 'hourly' ? 'بالساعة' : 'بالشفت'}
                                 </TableCell>
                                 <TableCell className="text-right">{shift.amount} شيكل</TableCell>
-                                <TableCell className="text-right">
-                                  {shift.isPaid ? <span className="text-green-600 flex items-center gap-1 justify-end">
-                                      تم الدفع
-                                      <CheckCircle className="h-4 w-4 ml-1" />
-                                    </span> : <span className="text-amber-600 flex items-center gap-1 justify-end">
-                                      معلق
-                                      <Clock className="h-4 w-4 ml-1" />
-                                    </span>}
-                                </TableCell>
+                                
                               </TableRow>;
                     })}
                       </TableBody>
