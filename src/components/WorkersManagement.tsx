@@ -200,7 +200,7 @@ const WorkersManagement: React.FC = () => {
       <h2 className="text-2xl font-bold text-right">إدارة العمال</h2>
       
       <Tabs defaultValue="worker-list" className="w-full" dir="rtl">
-        <TabsList className="grid w-full grid-cols-4 text-right" dir="rtl">
+        <TabsList dir="rtl" className="flex flex-row-reverse w-full justify-between text-right\n">
           <TabsTrigger value="worker-list" className="text-right order-4">قائمة العمال</TabsTrigger>
           <TabsTrigger value="add-worker" className="text-right order-3">إضافة عامل</TabsTrigger>
           <TabsTrigger value="work-sessions" className="text-right order-2">جلسات العمل</TabsTrigger>
