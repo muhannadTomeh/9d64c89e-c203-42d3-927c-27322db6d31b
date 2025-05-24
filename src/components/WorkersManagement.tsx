@@ -211,54 +211,12 @@ const WorkersManagement: React.FC = () => {
         <TabsContent value="worker-list" className="space-y-6">
           <div className="flex flex-row justify-between items-center pb-4">
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="bg-olive-700 text-white hover:bg-olive-800">
-                <X className="ml-2 h-4 w-4" />
-                إلغاء
-              </Button>
-            </div>
-            <h3 className="text-xl font-bold text-right">قائمة العمال</h3>
-          </div>
-          
-          <div className="bg-olive-50/50 p-6 rounded-lg border border-olive-200">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6" dir="rtl">
-              <div className="text-right order-2 md:order-1">
-                <Label htmlFor="phone" className="block text-right font-medium mb-1">رقم الهاتف (اختياري)</Label>
-                <Input id="phone" placeholder="أدخل رقم الهاتف" className="text-right" dir="rtl" tabIndex={2} />
-              </div>
               
-              <div className="text-right order-1 md:order-2">
-                <Label htmlFor="name" className="block text-right font-medium mb-1">اسم العامل *</Label>
-                <Input id="name" placeholder="أدخل اسم العامل" className="text-right" dir="rtl" tabIndex={1} />
-              </div>
-              
-              <div className="text-right order-4 md:order-3">
-                <Label htmlFor="rate" className="block text-right font-medium mb-1">سعر الساعة (شيكل) *</Label>
-                <Input id="rate" type="number" placeholder="أدخل سعر الساعة" className="text-right" dir="rtl" tabIndex={4} />
-              </div>
-              
-              <div className="text-right order-3 md:order-4">
-                <Label htmlFor="workerType" className="block text-right font-medium mb-1">نوع العمل *</Label>
-                <Select value={workerType} onValueChange={(value: WorkerType) => setWorkerType(value)}>
-                  <SelectTrigger id="workerType" className="text-right" dir="rtl" tabIndex={3}>
-                    <SelectValue placeholder="عامل بالساعة" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="hourly">عامل بالساعة</SelectItem>
-                    <SelectItem value="shift">عامل بالشفت</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
             
-            <div className="flex justify-between flex flex-row-reverse">
-              <Button variant="outline" tabIndex={6}>
-                إلغاء
-              </Button>
-              <Button className="bg-olive-700 hover:bg-olive-800 text-white" tabIndex={5}>
-                إضافة العامل
-              </Button>
-            </div>
           </div>
+          
+          
           
           <div className="overflow-x-auto" dir="rtl">
             <Table>
