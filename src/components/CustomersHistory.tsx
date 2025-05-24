@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useMillContext } from '@/context/MillContext';
 import { Invoice } from '@/types';
-import { ChevronDown, ChevronUp, FileText, Phone, User, Calendar, Droplets } from 'lucide-react';
+import { ChevronDown, ChevronUp, FileText, Phone, User, Calendar, Droplets, Search, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 
