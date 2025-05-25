@@ -1,16 +1,16 @@
 
 import React from 'react';
 import WorkerDetails from '@/components/WorkerDetails';
-import { MillProvider } from '@/context/MillContext';
+import { SupabaseMillProvider } from '@/context/SupabaseMillContext';
 import Layout from '@/components/Layout';
 
 const WorkerDetailPage = () => {
   return (
-    <MillProvider>
+    <SupabaseMillProvider>
       <Layout>
         <WorkerDetails />
       </Layout>
-    </MillProvider>
+    </SupabaseMillProvider>
   );
 };
 

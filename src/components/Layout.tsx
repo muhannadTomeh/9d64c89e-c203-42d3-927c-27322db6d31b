@@ -1,13 +1,20 @@
 
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LogOut } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { signOut } = useAuth();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
   };
 
   return (
@@ -51,7 +58,15 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               })}
             </h2>
             <div className="flex items-center gap-4">
-              {/* Add user profile or notifications here if needed */}
+              <Button
+                onClick={handleSignOut}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <LogOut size={16} />
+                تسجيل الخروج
+              </Button>
             </div>
           </div>
         </header>
