@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useMillContext } from '@/context/MillContext';
+import { useSupabaseMillContext } from '@/context/SupabaseMillContext';
 import { Worker, WorkerShift, WorkerType } from '@/types';
 import { toast } from 'sonner';
 import { Search, Plus, Edit, DollarSign, Clock, Calendar, Briefcase, CheckCircle, XCircle, FileText, X } from 'lucide-react';
@@ -32,7 +32,7 @@ const WorkersManagement: React.FC = () => {
     addWorkerShift,
     workerPayments,
     addWorkerPayment
-  } = useMillContext();
+  } = useSupabaseMillContext();
   const [searchQuery, setSearchQuery] = useState('');
 
   // Add Worker Dialog State
