@@ -199,7 +199,7 @@ const OilTrading: React.FC = () => {
                     <p>لا يوجد عمليات بيع مسجلة</p>
                   </div> : <div className="space-y-4 max-h-[400px] overflow-y-auto">
                     {sellTrades.map(trade => <Card key={trade.id} className="border border-green-200">
-                        <CardContent className="p-4">
+                        <CardContent className="p-4 text-right">
                           <div className="flex justify-between items-center mb-2">
                             <h4 className="font-bold text-lg text-green-600">
                               بيع زيت
