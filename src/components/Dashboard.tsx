@@ -96,11 +96,11 @@ const Dashboard: React.FC = () => {
             <h3 className="text-lg font-bold text-olive-800 text-right">المعلومات الثابتة للموسم الحالي</h3>
           </div>
           <CardContent className="p-6 space-y-2 -  flex-row-reverse">
-            <div className=" border-b pb-2 flex-row-reverse">
+            <div className=" border-b pb-2 flex-row-reverse flex justify-between ">
               <span>{settings.oilSellPrice} شيكل/كغم</span>
               <span className="font-semibold">سعر بيع الزيت:</span>
             </div>
-            <div className="flex-row-reverse border-b pb-2 ">
+            <div className="flex-row-reverse border-b pb-2  flex justify-between ">
               <span>{settings.oilBuyPrice} شيكل/كغم</span>
               <span className="font-semibold">سعر شراء الزيت:</span>
             </div>
