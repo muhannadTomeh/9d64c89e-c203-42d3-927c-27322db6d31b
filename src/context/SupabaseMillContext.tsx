@@ -369,6 +369,431 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
     setSettings(updatedSettings);
   };
 
+  // Worker functions
+  const addWorker = async (worker: Omit<Worker, 'id' | 'createdAt'>) => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('workers')
+      .insert({
+        user_id: user.id,
+        name: worker.name,
+        phone_number: worker.phoneNumber,
+        type: worker.type,
+        hourly_rate: worker.hourlyRate,
+        shift_rate: worker.shiftRate,
+        notes: worker.notes,
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error adding worker:', error);
+      toast({
+        title: "خطأ في إضافة العامل",
+        description: "حدث خطأ أثناء إضافة العامل",
+        variant: "destructive",
+      });
+      throw error;
+    }
+    
+    const newWorker: Worker = {
+      id: data.id,
+      name: data.name,
+      phoneNumber: data.phone_number,
+      type: data.type as "hourly" | "shift",
+      hourlyRate: data.hourly_rate ? parseFloat(data.hourly_rate.toString()) : undefined,
+      shiftRate: data.shift_rate ? parseFloat(data.shift_rate.toString()) : undefined,
+      notes: data.notes,
+      createdAt: new Date(data.created_at),
+    };
+    
+    setWorkers(prev => [newWorker, ...prev]);
+    
+    toast({
+      title: "تم إضافة العامل بنجاح",
+      description: `تم إضافة العامل ${newWorker.name} بنجاح`,
+    });
+  };
+
+  const updateWorker = async (id: string, updates: Partial<Worker>) => {
+    if (!user) return {} as Worker;
+    
+    const { data, error } = await supabase
+      .from('workers')
+      .update({
+        name: updates.name,
+        phone_number: updates.phoneNumber,
+        type: updates.type,
+        hourly_rate: updates.hourlyRate,
+        shift_rate: updates.shiftRate,
+        notes: updates.notes,
+      })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error updating worker:', error);
+      toast({
+        title: "خطأ في تحديث العامل",
+        description: "حدث خطأ أثناء تحديث بيانات العامل",
+        variant: "destructive",
+      });
+      throw error;
+    }
+    
+    const updatedWorker: Worker = {
+      id: data.id,
+      name: data.name,
+      phoneNumber: data.phone_number,
+      type: data.type as "hourly" | "shift",
+      hourlyRate: data.hourly_rate ? parseFloat(data.hourly_rate.toString()) : undefined,
+      shiftRate: data.shift_rate ? parseFloat(data.shift_rate.toString()) : undefined,
+      notes: data.notes,
+      createdAt: new Date(data.created_at),
+    };
+    
+    setWorkers(prev => 
+      prev.map(worker => 
+        worker.id === id ? updatedWorker : worker
+      )
+    );
+    
+    toast({
+      title: "تم تحديث العامل بنجاح",
+      description: `تم تحديث بيانات العامل ${updatedWorker.name} بنجاح`,
+    });
+    
+    return updatedWorker;
+  };
+
+  const removeWorker = async (id: string) => {
+    if (!user) return;
+    
+    const { error } = await supabase
+      .from('workers')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error removing worker:', error);
+      toast({
+        title: "خطأ في حذف العامل",
+        description: "حدث خطأ أثناء حذف العامل",
+        variant: "destructive",
+      });
+      throw error;
+    }
+    
+    setWorkers(prev => prev.filter(worker => worker.id !== id));
+    
+    toast({
+      title: "تم حذف العامل بنجاح",
+      description: "تم حذف العامل من النظام",
+    });
+  };
+
+  // Worker shift functions
+  const addWorkerShift = async (shift: Omit<WorkerShift, 'id'>) => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('worker_shifts')
+      .insert({
+        user_id: user.id,
+        worker_id: shift.workerId,
+        date: shift.date.toISOString(),
+        hours: shift.hours,
+        shifts: shift.shifts,
+        amount: shift.amount,
+        is_paid: shift.isPaid,
+        notes: shift.notes,
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error adding worker shift:', error);
+      toast({
+        title: "خطأ في تسجيل الشفت",
+        description: "حدث خطأ أثناء تسجيل جلسة العمل",
+        variant: "destructive",
+      });
+      throw error;
+    }
+    
+    const newShift: WorkerShift = {
+      id: data.id,
+      workerId: data.worker_id,
+      date: new Date(data.date),
+      hours: data.hours ? parseFloat(data.hours.toString()) : undefined,
+      shifts: data.shifts,
+      amount: parseFloat(data.amount.toString()),
+      isPaid: data.is_paid,
+      notes: data.notes,
+    };
+    
+    setWorkerShifts(prev => [newShift, ...prev]);
+    
+    toast({
+      title: "تم تسجيل الشفت بنجاح",
+      description: "تم تسجيل جلسة العمل بنجاح",
+    });
+  };
+
+  const updateWorkerShift = async (id: string, updates: Partial<WorkerShift>) => {
+    if (!user) return {} as WorkerShift;
+    
+    const { data, error } = await supabase
+      .from('worker_shifts')
+      .update({
+        worker_id: updates.workerId,
+        date: updates.date?.toISOString(),
+        hours: updates.hours,
+        shifts: updates.shifts,
+        amount: updates.amount,
+        is_paid: updates.isPaid,
+        notes: updates.notes,
+      })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error updating worker shift:', error);
+      throw error;
+    }
+    
+    const updatedShift: WorkerShift = {
+      id: data.id,
+      workerId: data.worker_id,
+      date: new Date(data.date),
+      hours: data.hours ? parseFloat(data.hours.toString()) : undefined,
+      shifts: data.shifts,
+      amount: parseFloat(data.amount.toString()),
+      isPaid: data.is_paid,
+      notes: data.notes,
+    };
+    
+    setWorkerShifts(prev => 
+      prev.map(shift => 
+        shift.id === id ? updatedShift : shift
+      )
+    );
+    
+    return updatedShift;
+  };
+
+  const removeWorkerShift = async (id: string) => {
+    if (!user) return;
+    
+    const { error } = await supabase
+      .from('worker_shifts')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error removing worker shift:', error);
+      throw error;
+    }
+    
+    setWorkerShifts(prev => prev.filter(shift => shift.id !== id));
+  };
+
+  // Worker payment functions
+  const addWorkerPayment = async (payment: Omit<WorkerPayment, 'id'>) => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('worker_payments')
+      .insert({
+        user_id: user.id,
+        worker_id: payment.workerId,
+        date: payment.date.toISOString(),
+        amount: payment.amount,
+        notes: payment.notes,
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error adding worker payment:', error);
+      toast({
+        title: "خطأ في تسجيل الدفعة",
+        description: "حدث خطأ أثناء تسجيل دفعة العامل",
+        variant: "destructive",
+      });
+      throw error;
+    }
+    
+    const newPayment: WorkerPayment = {
+      id: data.id,
+      workerId: data.worker_id,
+      date: new Date(data.date),
+      amount: parseFloat(data.amount.toString()),
+      notes: data.notes,
+    };
+    
+    setWorkerPayments(prev => [newPayment, ...prev]);
+    
+    toast({
+      title: "تم تسجيل الدفعة بنجاح",
+      description: "تم تسجيل دفعة العامل بنجاح",
+    });
+  };
+
+  const removeWorkerPayment = async (id: string) => {
+    if (!user) return;
+    
+    const { error } = await supabase
+      .from('worker_payments')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error removing worker payment:', error);
+      throw error;
+    }
+    
+    setWorkerPayments(prev => prev.filter(payment => payment.id !== id));
+  };
+
+  // Oil trade functions
+  const addOilTrade = async (trade: Omit<OilTrade, 'id' | 'date' | 'total'>) => {
+    if (!user) return;
+    
+    const total = trade.amount * trade.price;
+    
+    const { data, error } = await supabase
+      .from('oil_trades')
+      .insert({
+        user_id: user.id,
+        type: trade.type,
+        amount: trade.amount,
+        price: trade.price,
+        total: total,
+        person_name: trade.personName,
+        notes: trade.notes,
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error adding oil trade:', error);
+      throw error;
+    }
+    
+    const newTrade: OilTrade = {
+      id: data.id,
+      type: data.type as "buy" | "sell",
+      amount: parseFloat(data.amount.toString()),
+      price: parseFloat(data.price.toString()),
+      total: parseFloat(data.total.toString()),
+      personName: data.person_name,
+      date: new Date(data.date),
+      notes: data.notes,
+    };
+    
+    setOilTrades(prev => [newTrade, ...prev]);
+  };
+
+  const removeOilTrade = async (id: string) => {
+    if (!user) return;
+    
+    const { error } = await supabase
+      .from('oil_trades')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+    
+    setOilTrades(prev => prev.filter(trade => trade.id !== id));
+  };
+
+  // Expense functions
+  const addExpense = async (expense: Omit<Expense, 'id' | 'date'>) => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('expenses')
+      .insert({
+        user_id: user.id,
+        category: expense.category,
+        amount: expense.amount,
+        notes: expense.notes,
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    const newExpense: Expense = {
+      id: data.id,
+      category: data.category,
+      amount: parseFloat(data.amount.toString()),
+      date: new Date(data.date),
+      notes: data.notes,
+    };
+    
+    setExpenses(prev => [newExpense, ...prev]);
+  };
+
+  const removeExpense = async (id: string) => {
+    if (!user) return;
+    
+    const { error } = await supabase
+      .from('expenses')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+    
+    setExpenses(prev => prev.filter(expense => expense.id !== id));
+  };
+
+  // Invoice functions
+  const addInvoice = async (invoice: Omit<Invoice, 'id' | 'date'>) => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('invoices')
+      .insert({
+        user_id: user.id,
+        customer_id: invoice.customerId,
+        customer_name: invoice.customerName,
+        customer_phone: invoice.customerPhone,
+        oil_amount: invoice.oilAmount,
+        payment_method: invoice.paymentMethod,
+        tanks: invoice.tanks,
+        return_amount: invoice.returnAmount,
+        tanks_payment: invoice.tanksPayment,
+        total: invoice.total,
+        notes: invoice.notes,
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    const newInvoice: Invoice = {
+      id: data.id,
+      customerId: data.customer_id,
+      customerName: data.customer_name,
+      customerPhone: data.customer_phone,
+      date: new Date(data.date),
+      oilAmount: parseFloat(data.oil_amount.toString()),
+      paymentMethod: data.payment_method as "oil" | "cash" | "mixed",
+      tanks: data.tanks as any,
+      returnAmount: data.return_amount as any,
+      tanksPayment: data.tanks_payment as any,
+      total: data.total as any,
+      notes: data.notes,
+    };
+    
+    setInvoices(prev => [newInvoice, ...prev]);
+  };
+
   // Migration functions
   const migrateLocalData = async () => {
     if (!user) return;
@@ -448,139 +873,10 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
   };
 
   const importLocalData = async (data: string) => {
-    // Implementation for importing local data
     console.log('Importing data:', data);
   };
 
-  // Add other CRUD functions here (workers, shifts, payments, etc.)
-  const addWorker = async (worker: Omit<Worker, 'id' | 'createdAt'>) => {
-    if (!user) return;
-    
-    const { data, error } = await supabase
-      .from('workers')
-      .insert({
-        user_id: user.id,
-        name: worker.name,
-        phone_number: worker.phoneNumber,
-        type: worker.type,
-        hourly_rate: worker.hourlyRate,
-        shift_rate: worker.shiftRate,
-        notes: worker.notes,
-      })
-      .select()
-      .single();
-    
-    if (error) throw error;
-    
-    const newWorker: Worker = {
-      id: data.id,
-      name: data.name,
-      phoneNumber: data.phone_number,
-      type: data.type as "hourly" | "shift",
-      hourlyRate: data.hourly_rate ? parseFloat(data.hourly_rate.toString()) : undefined,
-      shiftRate: data.shift_rate ? parseFloat(data.shift_rate.toString()) : undefined,
-      notes: data.notes,
-      createdAt: new Date(data.created_at),
-    };
-    
-    setWorkers(prev => [newWorker, ...prev]);
-  };
-
-  const updateWorker = async (id: string, updates: Partial<Worker>) => {
-    if (!user) return {} as Worker;
-    
-    const { data, error } = await supabase
-      .from('workers')
-      .update({
-        name: updates.name,
-        phone_number: updates.phoneNumber,
-        type: updates.type,
-        hourly_rate: updates.hourlyRate,
-        shift_rate: updates.shiftRate,
-        notes: updates.notes,
-      })
-      .eq('id', id)
-      .select()
-      .single();
-    
-    if (error) throw error;
-    
-    const updatedWorker: Worker = {
-      id: data.id,
-      name: data.name,
-      phoneNumber: data.phone_number,
-      type: data.type as "hourly" | "shift",
-      hourlyRate: data.hourly_rate ? parseFloat(data.hourly_rate.toString()) : undefined,
-      shiftRate: data.shift_rate ? parseFloat(data.shift_rate.toString()) : undefined,
-      notes: data.notes,
-      createdAt: new Date(data.created_at),
-    };
-    
-    setWorkers(prev => 
-      prev.map(worker => 
-        worker.id === id ? updatedWorker : worker
-      )
-    );
-    
-    return updatedWorker;
-  };
-
-  const removeWorker = async (id: string) => {
-    if (!user) return;
-    
-    const { error } = await supabase
-      .from('workers')
-      .delete()
-      .eq('id', id);
-    
-    if (error) throw error;
-    
-    setWorkers(prev => prev.filter(worker => worker.id !== id));
-  };
-
-  // Add other functions (addWorkerShift, addWorkerPayment, etc.) with similar patterns...
-  const addWorkerShift = async (shift: Omit<WorkerShift, 'id'>) => {
-    // Implementation similar to addWorker
-  };
-
-  const updateWorkerShift = async (id: string, updates: Partial<WorkerShift>) => {
-    return {} as WorkerShift;
-  };
-
-  const removeWorkerShift = async (id: string) => {
-    // Implementation
-  };
-
-  const addWorkerPayment = async (payment: Omit<WorkerPayment, 'id'>) => {
-    // Implementation
-  };
-
-  const removeWorkerPayment = async (id: string) => {
-    // Implementation
-  };
-
-  const addOilTrade = async (trade: Omit<OilTrade, 'id' | 'date' | 'total'>) => {
-    // Implementation
-  };
-
-  const removeOilTrade = async (id: string) => {
-    // Implementation
-  };
-
-  const addExpense = async (expense: Omit<Expense, 'id' | 'date'>) => {
-    // Implementation
-  };
-
-  const removeExpense = async (id: string) => {
-    // Implementation
-  };
-
-  const addInvoice = async (invoice: Omit<Invoice, 'id' | 'date'>) => {
-    // Implementation
-  };
-
   const getStatistics = (): MillStatistics => {
-    // Implementation similar to original context
     const totalOilProduced = invoices.reduce((sum, invoice) => sum + invoice.oilAmount, 0);
     const totalCashRevenue = invoices.reduce((sum, invoice) => sum + invoice.total.cash, 0);
     
