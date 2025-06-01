@@ -1,16 +1,16 @@
 
 import React from 'react';
 import ExpensesManagement from '@/components/ExpensesManagement';
-import { MillProvider } from '@/context/MillContext';
+import { SupabaseMillProvider } from '@/context/SupabaseMillContext';
 import Layout from '@/components/Layout';
 
 const ExpensesPage = () => {
   return (
-    <MillProvider>
+    <SupabaseMillProvider>
       <Layout>
         <ExpensesManagement />
       </Layout>
-    </MillProvider>
+    </SupabaseMillProvider>
   );
 };
 
