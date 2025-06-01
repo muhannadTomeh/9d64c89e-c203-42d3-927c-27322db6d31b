@@ -1,16 +1,16 @@
 
 import React from 'react';
 import InvoiceCalculator from '@/components/InvoiceCalculator';
-import { MillProvider } from '@/context/MillContext';
+import { SupabaseMillProvider } from '@/context/SupabaseMillContext';
 import Layout from '@/components/Layout';
 
 const InvoicesPage = () => {
   return (
-    <MillProvider>
+    <SupabaseMillProvider>
       <Layout>
         <InvoiceCalculator />
       </Layout>
-    </MillProvider>
+    </SupabaseMillProvider>
   );
 };
 
