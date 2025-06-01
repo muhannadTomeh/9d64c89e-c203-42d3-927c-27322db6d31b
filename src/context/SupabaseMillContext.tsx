@@ -280,10 +280,10 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
       date: new Date(invoice.date),
       oilAmount: parseFloat(invoice.oil_amount.toString()),
       paymentMethod: invoice.payment_method as "oil" | "cash" | "mixed",
-      tanks: invoice.tanks as any,
-      returnAmount: invoice.return_amount as any,
-      tanksPayment: invoice.tanks_payment as any,
-      total: invoice.total as any,
+      tanks: typeof invoice.tanks === 'string' ? JSON.parse(invoice.tanks) : invoice.tanks,
+      returnAmount: typeof invoice.return_amount === 'string' ? JSON.parse(invoice.return_amount) : invoice.return_amount,
+      tanksPayment: typeof invoice.tanks_payment === 'string' ? JSON.parse(invoice.tanks_payment) : invoice.tanks_payment,
+      total: typeof invoice.total === 'string' ? JSON.parse(invoice.total) : invoice.total,
       notes: invoice.notes,
       seasonId: invoice.season_id,
     }));
@@ -912,6 +912,7 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
     const { data, error } = await supabase
       .from('invoices')
       .insert({
+        user_id: user.id,
         customer_id: invoice.customerId,
         customer_name: invoice.customerName,
         customer_phone: invoice.customerPhone,
@@ -937,10 +938,10 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
       date: new Date(data.date),
       oilAmount: parseFloat(data.oil_amount.toString()),
       paymentMethod: data.payment_method as "oil" | "cash" | "mixed",
-      tanks: JSON.parse(data.tanks),
-      returnAmount: JSON.parse(data.return_amount),
-      tanksPayment: JSON.parse(data.tanks_payment),
-      total: JSON.parse(data.total),
+      tanks: typeof data.tanks === 'string' ? JSON.parse(data.tanks) : data.tanks,
+      returnAmount: typeof data.return_amount === 'string' ? JSON.parse(data.return_amount) : data.return_amount,
+      tanksPayment: typeof data.tanks_payment === 'string' ? JSON.parse(data.tanks_payment) : data.tanks_payment,
+      total: typeof data.total === 'string' ? JSON.parse(data.total) : data.total,
       notes: data.notes,
       seasonId: data.season_id,
     };

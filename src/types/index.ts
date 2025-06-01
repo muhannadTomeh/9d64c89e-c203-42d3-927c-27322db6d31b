@@ -26,6 +26,8 @@ export interface Invoice {
   tanksPayment: {
     plastic: number;
     metal: number;
+    oil: number;
+    cash: number;
   };
   total: {
     oil: number;
@@ -141,3 +143,8 @@ export interface UserProfile {
   createdAt: Date;
   updatedAt: Date;
 }
+
+// Type aliases for compatibility
+export type PaymentMethod = "oil" | "cash" | "mixed";
+export type TradeType = "buy" | "sell";
+export type WorkerType = "hourly" | "shift";

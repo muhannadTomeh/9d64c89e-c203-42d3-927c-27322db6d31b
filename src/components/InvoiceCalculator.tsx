@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,13 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { useMillContext } from '@/context/MillContext';
+import { useSupabaseMillContext } from '@/context/SupabaseMillContext';
 import { Customer, PaymentMethod, TankType } from '@/types';
 import { calculateInvoice } from '@/utils/calculations';
 import { toast } from 'sonner';
 
 const InvoiceCalculator: React.FC = () => {
-  const { customers, invoices, addInvoice, settings, removeCustomerFromQueue } = useMillContext();
+  const { customers, invoices, addInvoice, settings, removeCustomerFromQueue } = useSupabaseMillContext();
   const queuedCustomers = customers.filter(c => c.status === 'pending');
   
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
