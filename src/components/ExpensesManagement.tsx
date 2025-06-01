@@ -6,11 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useMillContext } from '@/context/MillContext';
+import { useSupabaseMillContext } from '@/context/SupabaseMillContext';
 import { toast } from 'sonner';
+import { Trash2 } from 'lucide-react';
 
 const ExpensesManagement: React.FC = () => {
-  const { expenses, addExpense, getStatistics } = useMillContext();
+  const { expenses, addExpense, removeExpense, getStatistics } = useSupabaseMillContext();
   
   const [category, setCategory] = useState('');
   const [customCategory, setCustomCategory] = useState('');
@@ -67,6 +68,16 @@ const ExpensesManagement: React.FC = () => {
     setNotes('');
     
     toast.success('تم تسجيل المصروف بنجاح');
+  };
+
+  const handleDeleteExpense = async (expenseId: string) => {
+    try {
+      await removeExpense(expenseId);
+      toast.success('تم حذف المصروف بنجاح');
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+      toast.error('حدث خطأ أثناء حذف المصروف');
+    }
   };
   
   const formatDate = (date: Date) => {
@@ -214,14 +225,29 @@ const ExpensesManagement: React.FC = () => {
                           <Card key={expense.id} className="border border-gray-200">
                             <CardContent className="p-3">
                               <div className="flex justify-between items-center">
-                                <div className="font-semibold">{expense.category}</div>
-                                <div className="text-red-600">{expense.amount.toFixed(2)} شيكل</div>
-                              </div>
-                              {expense.notes && (
-                                <div className="mt-2 text-sm text-gray-500">
-                                  {expense.notes}
+                                <div className="flex-grow">
+                                  <div className="flex justify-between items-center">
+                                    <div className="font-semibold">{expense.category}</div>
+                                    <div className="flex items-center gap-2">
+                                      <div className="text-red-600">{expense.amount.toFixed(2)} شيكل</div>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleDeleteExpense(expense.id)}
+                                        className="text-red-500 hover:text-red-700 h-8 w-8 p-0"
+                                        title="حذف المصروف"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                  {expense.notes && (
+                                    <div className="mt-2 text-sm text-gray-500">
+                                      {expense.notes}
+                                    </div>
+                                  )}
                                 </div>
-                              )}
+                              </div>
                             </CardContent>
                           </Card>
                         ))}
