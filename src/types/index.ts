@@ -1,5 +1,4 @@
 
-// Customer types
 export interface Customer {
   id: string;
   name: string;
@@ -8,14 +7,7 @@ export interface Customer {
   notes?: string;
   createdAt: Date;
   status: "pending" | "completed";
-}
-
-// Invoice types
-export type PaymentMethod = "oil" | "cash" | "mixed";
-
-export interface TankType {
-  type: "plastic" | "metal";
-  count: number;
+  seasonId?: string;
 }
 
 export interface Invoice {
@@ -24,48 +16,51 @@ export interface Invoice {
   customerName: string;
   customerPhone?: string;
   date: Date;
-  oilAmount: number; // in kg
-  paymentMethod: PaymentMethod;
+  oilAmount: number;
+  paymentMethod: "oil" | "cash" | "mixed";
   tanks: TankType[];
   returnAmount: {
-    oil: number; // in kg
-    cash: number; // in shekels
+    oil: number;
+    cash: number;
   };
   tanksPayment: {
-    oil: number; // in kg
-    cash: number; // in shekels
+    plastic: number;
+    metal: number;
   };
   total: {
-    oil: number; // in kg
-    cash: number; // in shekels
+    oil: number;
+    cash: number;
   };
   notes?: string;
+  seasonId?: string;
 }
 
-// Settings types
+export interface TankType {
+  type: "plastic" | "metal";
+  count: number;
+}
+
 export interface MillSettings {
-  oilReturnPercentage: number; // e.g., 6%
-  oilBuyPrice: number; // e.g., 23 shekels/kg
-  oilSellPrice: number; // e.g., 25 shekels/kg
-  cashReturnPrice: number; // e.g., 1.5 shekels/kg
+  oilReturnPercentage: number;
+  oilBuyPrice: number;
+  oilSellPrice: number;
+  cashReturnPrice: number;
   tankPrices: {
-    plastic: number; // e.g., 10 shekels
-    metal: number; // e.g., 15 shekels
+    plastic: number;
+    metal: number;
   };
 }
-
-// Worker types
-export type WorkerType = "hourly" | "shift";
 
 export interface Worker {
   id: string;
   name: string;
   phoneNumber?: string;
-  type: WorkerType;
+  type: "hourly" | "shift";
   hourlyRate?: number;
   shiftRate?: number;
   notes?: string;
   createdAt: Date;
+  seasonId?: string;
 }
 
 export interface WorkerShift {
@@ -77,6 +72,7 @@ export interface WorkerShift {
   amount: number;
   isPaid: boolean;
   notes?: string;
+  seasonId?: string;
 }
 
 export interface WorkerPayment {
@@ -85,32 +81,30 @@ export interface WorkerPayment {
   date: Date;
   amount: number;
   notes?: string;
+  seasonId?: string;
 }
-
-// Oil Trading types
-export type TradeType = "buy" | "sell";
 
 export interface OilTrade {
   id: string;
-  type: TradeType;
-  amount: number; // in kg
-  price: number; // per kg
-  total: number; // total price
-  personName?: string; // supplier or customer name
+  type: "buy" | "sell";
+  amount: number;
+  price: number;
+  total: number;
+  personName?: string;
   date: Date;
   notes?: string;
+  seasonId?: string;
 }
 
-// Expense types
 export interface Expense {
   id: string;
-  category: string; // e.g., "maintenance", "food", "transport"
+  category: string;
   amount: number;
   date: Date;
   notes?: string;
+  seasonId?: string;
 }
 
-// Dashboard statistics type
 export interface MillStatistics {
   totalCustomers: number;
   totalOilProduced: number;
@@ -118,4 +112,32 @@ export interface MillStatistics {
   currentCash: number;
   totalExpenses: number;
   currentOilStock: number;
+}
+
+export interface Company {
+  id: string;
+  name: string;
+  description?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Season {
+  id: string;
+  companyId: string;
+  name: string;
+  year: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface UserProfile {
+  id: string;
+  role: "admin" | "normal";
+  companyId?: string;
+  firstName?: string;
+  lastName?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }

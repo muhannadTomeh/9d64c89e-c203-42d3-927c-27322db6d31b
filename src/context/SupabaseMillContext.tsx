@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Customer, Invoice, MillSettings, Worker, WorkerShift, WorkerPayment, OilTrade, Expense, MillStatistics } from '@/types';
+import { Customer, Invoice, MillSettings, Worker, WorkerShift, WorkerPayment, OilTrade, Expense, MillStatistics, Season, Company, UserProfile } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
 interface SupabaseMillContextType {
@@ -40,6 +40,26 @@ interface SupabaseMillContextType {
   
   getStatistics: () => MillStatistics;
   isLoading: boolean;
+  
+  // Multi-tenant properties
+  currentSeason: Season | null;
+  seasons: Season[];
+  companies: Company[];
+  userProfile: UserProfile | null;
+  allUserProfiles: UserProfile[];
+  
+  // Season management
+  addSeason: (season: Omit<Season, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateSeason: (id: string, updates: Partial<Season>) => Promise<void>;
+  setActiveSeason: (seasonId: string) => Promise<void>;
+  
+  // Company management (admin only)
+  addCompany: (company: Omit<Company, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateCompany: (id: string, updates: Partial<Company>) => Promise<void>;
+  
+  // User management (admin only)
+  updateUserRole: (userId: string, role: "admin" | "normal") => Promise<void>;
+  assignUserToCompany: (userId: string, companyId: string) => Promise<void>;
   
   // Migration functions
   migrateLocalData: () => Promise<void>;
@@ -82,6 +102,13 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Multi-tenant state
+  const [currentSeason, setCurrentSeason] = useState<Season | null>(null);
+  const [seasons, setSeasons] = useState<Season[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [allUserProfiles, setAllUserProfiles] = useState<UserProfile[]>([]);
+
   // Load data when user is authenticated
   useEffect(() => {
     if (user) {
@@ -95,6 +122,9 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
     setIsLoading(true);
     try {
       await Promise.all([
+        loadUserProfile(),
+        loadCompanies(),
+        loadSeasons(),
         loadCustomers(),
         loadInvoices(),
         loadSettings(),
@@ -116,6 +146,102 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
     }
   };
 
+  const loadUserProfile = async () => {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', user!.id)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') throw error;
+    
+    if (data) {
+      const profile: UserProfile = {
+        id: data.id,
+        role: data.role as "admin" | "normal",
+        companyId: data.company_id,
+        firstName: data.first_name,
+        lastName: data.last_name,
+        createdAt: new Date(data.created_at),
+        updatedAt: new Date(data.updated_at),
+      };
+      setUserProfile(profile);
+      
+      // Load all user profiles if admin
+      if (profile.role === 'admin') {
+        await loadAllUserProfiles();
+      }
+    }
+  };
+
+  const loadAllUserProfiles = async () => {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    const profiles = data.map(profile => ({
+      id: profile.id,
+      role: profile.role as "admin" | "normal",
+      companyId: profile.company_id,
+      firstName: profile.first_name,
+      lastName: profile.last_name,
+      createdAt: new Date(profile.created_at),
+      updatedAt: new Date(profile.updated_at),
+    }));
+    
+    setAllUserProfiles(profiles);
+  };
+
+  const loadCompanies = async () => {
+    const { data, error } = await supabase
+      .from('companies')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    const mappedCompanies = data.map(company => ({
+      id: company.id,
+      name: company.name,
+      description: company.description,
+      createdAt: new Date(company.created_at),
+      updatedAt: new Date(company.updated_at),
+    }));
+    
+    setCompanies(mappedCompanies);
+  };
+
+  const loadSeasons = async () => {
+    const { data, error } = await supabase
+      .from('seasons')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    const mappedSeasons = data.map(season => ({
+      id: season.id,
+      companyId: season.company_id,
+      name: season.name,
+      year: season.year,
+      isActive: season.is_active,
+      createdAt: new Date(season.created_at),
+      updatedAt: new Date(season.updated_at),
+    }));
+    
+    setSeasons(mappedSeasons);
+    
+    // Set current season to the active one for user's company
+    const activeSeason = mappedSeasons.find(s => s.isActive && 
+      (userProfile?.role === 'admin' || s.companyId === userProfile?.companyId));
+    if (activeSeason) {
+      setCurrentSeason(activeSeason);
+    }
+  };
+
   const loadCustomers = async () => {
     const { data, error } = await supabase
       .from('customers')
@@ -132,6 +258,7 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
       notes: customer.notes,
       createdAt: new Date(customer.created_at),
       status: customer.status as "pending" | "completed",
+      seasonId: customer.season_id,
     }));
     
     setCustomers(mappedCustomers);
@@ -158,6 +285,7 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
       tanksPayment: invoice.tanks_payment as any,
       total: invoice.total as any,
       notes: invoice.notes,
+      seasonId: invoice.season_id,
     }));
     
     setInvoices(mappedInvoices);
@@ -199,6 +327,7 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
       shiftRate: worker.shift_rate ? parseFloat(worker.shift_rate.toString()) : undefined,
       notes: worker.notes,
       createdAt: new Date(worker.created_at),
+      seasonId: worker.season_id,
     }));
     
     setWorkers(mappedWorkers);
@@ -221,6 +350,7 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
       amount: parseFloat(shift.amount.toString()),
       isPaid: shift.is_paid,
       notes: shift.notes,
+      seasonId: shift.season_id,
     }));
     
     setWorkerShifts(mappedShifts);
@@ -240,6 +370,7 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
       date: new Date(payment.date),
       amount: parseFloat(payment.amount.toString()),
       notes: payment.notes,
+      seasonId: payment.season_id,
     }));
     
     setWorkerPayments(mappedPayments);
@@ -262,6 +393,7 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
       personName: trade.person_name,
       date: new Date(trade.date),
       notes: trade.notes,
+      seasonId: trade.season_id,
     }));
     
     setOilTrades(mappedTrades);
@@ -281,19 +413,27 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
       amount: parseFloat(expense.amount.toString()),
       date: new Date(expense.date),
       notes: expense.notes,
+      seasonId: expense.season_id,
     }));
     
     setExpenses(mappedExpenses);
   };
 
+  // Filter data by current season
+  const getSeasonFilteredData = <T extends { seasonId?: string }>(data: T[]): T[] => {
+    if (!currentSeason) return data;
+    return data.filter(item => item.seasonId === currentSeason.id);
+  };
+
   // Customer functions
   const addCustomer = async (customer: Omit<Customer, 'id' | 'createdAt' | 'status'>) => {
-    if (!user) return;
+    if (!user || !currentSeason) return;
     
     const { data, error } = await supabase
       .from('customers')
       .insert({
         user_id: user.id,
+        season_id: currentSeason.id,
         name: customer.name,
         phone_number: customer.phoneNumber,
         bags_count: customer.bagsCount,
@@ -312,6 +452,7 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
       notes: data.notes,
       createdAt: new Date(data.created_at),
       status: data.status as "pending" | "completed",
+      seasonId: data.season_id,
     };
     
     setCustomers(prev => [newCustomer, ...prev]);
@@ -371,12 +512,13 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
 
   // Worker functions
   const addWorker = async (worker: Omit<Worker, 'id' | 'createdAt'>) => {
-    if (!user) return;
+    if (!user || !currentSeason) return;
     
     const { data, error } = await supabase
       .from('workers')
       .insert({
         user_id: user.id,
+        season_id: currentSeason.id,
         name: worker.name,
         phone_number: worker.phoneNumber,
         type: worker.type,
@@ -406,6 +548,7 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
       shiftRate: data.shift_rate ? parseFloat(data.shift_rate.toString()) : undefined,
       notes: data.notes,
       createdAt: new Date(data.created_at),
+      seasonId: data.season_id,
     };
     
     setWorkers(prev => [newWorker, ...prev]);
@@ -452,6 +595,7 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
       shiftRate: data.shift_rate ? parseFloat(data.shift_rate.toString()) : undefined,
       notes: data.notes,
       createdAt: new Date(data.created_at),
+      seasonId: data.season_id,
     };
     
     setWorkers(prev => 
@@ -496,12 +640,13 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
 
   // Worker shift functions
   const addWorkerShift = async (shift: Omit<WorkerShift, 'id'>) => {
-    if (!user) return;
+    if (!user || !currentSeason) return;
     
     const { data, error } = await supabase
       .from('worker_shifts')
       .insert({
         user_id: user.id,
+        season_id: currentSeason.id,
         worker_id: shift.workerId,
         date: shift.date.toISOString(),
         hours: shift.hours,
@@ -532,6 +677,7 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
       amount: parseFloat(data.amount.toString()),
       isPaid: data.is_paid,
       notes: data.notes,
+      seasonId: data.season_id,
     };
     
     setWorkerShifts(prev => [newShift, ...prev]);
@@ -574,6 +720,7 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
       amount: parseFloat(data.amount.toString()),
       isPaid: data.is_paid,
       notes: data.notes,
+      seasonId: data.season_id,
     };
     
     setWorkerShifts(prev => 
@@ -603,12 +750,13 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
 
   // Worker payment functions
   const addWorkerPayment = async (payment: Omit<WorkerPayment, 'id'>) => {
-    if (!user) return;
+    if (!user || !currentSeason) return;
     
     const { data, error } = await supabase
       .from('worker_payments')
       .insert({
         user_id: user.id,
+        season_id: currentSeason.id,
         worker_id: payment.workerId,
         date: payment.date.toISOString(),
         amount: payment.amount,
@@ -633,6 +781,7 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
       date: new Date(data.date),
       amount: parseFloat(data.amount.toString()),
       notes: data.notes,
+      seasonId: data.season_id,
     };
     
     setWorkerPayments(prev => [newPayment, ...prev]);
@@ -661,7 +810,7 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
 
   // Oil trade functions
   const addOilTrade = async (trade: Omit<OilTrade, 'id' | 'date' | 'total'>) => {
-    if (!user) return;
+    if (!user || !currentSeason) return;
     
     const total = trade.amount * trade.price;
     
@@ -669,6 +818,7 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
       .from('oil_trades')
       .insert({
         user_id: user.id,
+        season_id: currentSeason.id,
         type: trade.type,
         amount: trade.amount,
         price: trade.price,
@@ -693,6 +843,7 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
       personName: data.person_name,
       date: new Date(data.date),
       notes: data.notes,
+      seasonId: data.season_id,
     };
     
     setOilTrades(prev => [newTrade, ...prev]);
@@ -713,12 +864,13 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
 
   // Expense functions
   const addExpense = async (expense: Omit<Expense, 'id' | 'date'>) => {
-    if (!user) return;
+    if (!user || !currentSeason) return;
     
     const { data, error } = await supabase
       .from('expenses')
       .insert({
         user_id: user.id,
+        season_id: currentSeason.id,
         category: expense.category,
         amount: expense.amount,
         notes: expense.notes,
@@ -734,6 +886,7 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
       amount: parseFloat(data.amount.toString()),
       date: new Date(data.date),
       notes: data.notes,
+      seasonId: data.season_id,
     };
     
     setExpenses(prev => [newExpense, ...prev]);
@@ -754,21 +907,21 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
 
   // Invoice functions
   const addInvoice = async (invoice: Omit<Invoice, 'id' | 'date'>) => {
-    if (!user) return;
+    if (!user || !currentSeason) return;
     
     const { data, error } = await supabase
       .from('invoices')
       .insert({
-        user_id: user.id,
         customer_id: invoice.customerId,
         customer_name: invoice.customerName,
         customer_phone: invoice.customerPhone,
+        season_id: currentSeason.id,
         oil_amount: invoice.oilAmount,
         payment_method: invoice.paymentMethod,
-        tanks: invoice.tanks,
-        return_amount: invoice.returnAmount,
-        tanks_payment: invoice.tanksPayment,
-        total: invoice.total,
+        tanks: JSON.stringify(invoice.tanks),
+        return_amount: JSON.stringify(invoice.returnAmount),
+        tanks_payment: JSON.stringify(invoice.tanksPayment),
+        total: JSON.stringify(invoice.total),
         notes: invoice.notes,
       })
       .select()
@@ -784,92 +937,203 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
       date: new Date(data.date),
       oilAmount: parseFloat(data.oil_amount.toString()),
       paymentMethod: data.payment_method as "oil" | "cash" | "mixed",
-      tanks: data.tanks as any,
-      returnAmount: data.return_amount as any,
-      tanksPayment: data.tanks_payment as any,
-      total: data.total as any,
+      tanks: JSON.parse(data.tanks),
+      returnAmount: JSON.parse(data.return_amount),
+      tanksPayment: JSON.parse(data.tanks_payment),
+      total: JSON.parse(data.total),
       notes: data.notes,
+      seasonId: data.season_id,
     };
     
     setInvoices(prev => [newInvoice, ...prev]);
   };
 
-  // Migration functions
-  const migrateLocalData = async () => {
+  // Season functions
+  const addSeason = async (season: Omit<Season, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (!user) return;
     
-    try {
-      // Get local data
-      const localCustomers = localStorage.getItem('millCustomers');
-      const localInvoices = localStorage.getItem('millInvoices');
-      const localSettings = localStorage.getItem('millSettings');
-      const localWorkers = localStorage.getItem('millWorkers');
-      const localWorkerShifts = localStorage.getItem('millWorkerShifts');
-      const localWorkerPayments = localStorage.getItem('millWorkerPayments');
-      const localOilTrades = localStorage.getItem('millOilTrades');
-      const localExpenses = localStorage.getItem('millExpenses');
-
-      // Migrate customers
-      if (localCustomers) {
-        const customers = JSON.parse(localCustomers);
-        for (const customer of customers) {
-          await addCustomer({
-            name: customer.name,
-            phoneNumber: customer.phoneNumber,
-            bagsCount: customer.bagsCount,
-            notes: customer.notes,
-          });
-        }
-      }
-
-      // Migrate settings
-      if (localSettings) {
-        const settings = JSON.parse(localSettings);
-        await updateSettings(settings);
-      }
-
-      // Migrate workers
-      if (localWorkers) {
-        const workers = JSON.parse(localWorkers);
-        for (const worker of workers) {
-          await addWorker({
-            name: worker.name,
-            phoneNumber: worker.phoneNumber,
-            type: worker.type,
-            hourlyRate: worker.hourlyRate,
-            shiftRate: worker.shiftRate,
-            notes: worker.notes,
-          });
-        }
-      }
-
-      toast({
-        title: "تم نقل البيانات بنجاح",
-        description: "تم نقل جميع البيانات المحلية إلى قاعدة البيانات",
-      });
-    } catch (error) {
-      console.error('Migration error:', error);
-      toast({
-        title: "خطأ في نقل البيانات",
-        description: "حدث خطأ أثناء نقل البيانات",
-        variant: "destructive",
-      });
+    const { data, error } = await supabase
+      .from('seasons')
+      .insert({
+        company_id: season.companyId,
+        name: season.name,
+        year: season.year,
+        is_active: season.isActive,
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    const newSeason: Season = {
+      id: data.id,
+      companyId: data.company_id,
+      name: data.name,
+      year: data.year,
+      isActive: data.is_active,
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.updated_at),
+    };
+    
+    setSeasons(prev => [newSeason, ...prev]);
+    
+    if (newSeason.isActive) {
+      setCurrentSeason(newSeason);
     }
   };
 
-  const exportLocalData = () => {
-    const localData = {
-      customers: localStorage.getItem('millCustomers'),
-      invoices: localStorage.getItem('millInvoices'),
-      settings: localStorage.getItem('millSettings'),
-      workers: localStorage.getItem('millWorkers'),
-      workerShifts: localStorage.getItem('millWorkerShifts'),
-      workerPayments: localStorage.getItem('millWorkerPayments'),
-      oilTrades: localStorage.getItem('millOilTrades'),
-      expenses: localStorage.getItem('millExpenses'),
+  const updateSeason = async (id: string, updates: Partial<Season>) => {
+    if (!user) return;
+    
+    const { error } = await supabase
+      .from('seasons')
+      .update({
+        name: updates.name,
+        year: updates.year,
+        is_active: updates.isActive,
+      })
+      .eq('id', id);
+    
+    if (error) throw error;
+    
+    setSeasons(prev => prev.map(season => 
+      season.id === id ? { ...season, ...updates, updatedAt: new Date() } : season
+    ));
+    
+    if (updates.isActive && currentSeason?.id !== id) {
+      const updatedSeason = seasons.find(s => s.id === id);
+      if (updatedSeason) {
+        setCurrentSeason({ ...updatedSeason, ...updates });
+      }
+    }
+  };
+
+  const setActiveSeason = async (seasonId: string) => {
+    if (!user) return;
+    
+    // Deactivate all seasons first
+    const { error: deactivateError } = await supabase
+      .from('seasons')
+      .update({ is_active: false })
+      .neq('id', seasonId);
+    
+    if (deactivateError) throw deactivateError;
+    
+    // Activate the selected season
+    const { error: activateError } = await supabase
+      .from('seasons')
+      .update({ is_active: true })
+      .eq('id', seasonId);
+    
+    if (activateError) throw activateError;
+    
+    setSeasons(prev => prev.map(season => ({
+      ...season,
+      isActive: season.id === seasonId,
+      updatedAt: new Date()
+    })));
+    
+    const activeSeason = seasons.find(s => s.id === seasonId);
+    if (activeSeason) {
+      setCurrentSeason({ ...activeSeason, isActive: true });
+    }
+  };
+
+  // Company functions
+  const addCompany = async (company: Omit<Company, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('companies')
+      .insert({
+        name: company.name,
+        description: company.description,
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    const newCompany: Company = {
+      id: data.id,
+      name: data.name,
+      description: data.description,
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.updated_at),
     };
     
-    return JSON.stringify(localData);
+    setCompanies(prev => [newCompany, ...prev]);
+  };
+
+  const updateCompany = async (id: string, updates: Partial<Company>) => {
+    if (!user) return;
+    
+    const { error } = await supabase
+      .from('companies')
+      .update({
+        name: updates.name,
+        description: updates.description,
+      })
+      .eq('id', id);
+    
+    if (error) throw error;
+    
+    setCompanies(prev => prev.map(company => 
+      company.id === id ? { ...company, ...updates, updatedAt: new Date() } : company
+    ));
+  };
+
+  // User management functions
+  const updateUserRole = async (userId: string, role: "admin" | "normal") => {
+    if (!user) return;
+    
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ role })
+      .eq('id', userId);
+    
+    if (error) throw error;
+    
+    setAllUserProfiles(prev => prev.map(profile => 
+      profile.id === userId ? { ...profile, role, updatedAt: new Date() } : profile
+    ));
+  };
+
+  const assignUserToCompany = async (userId: string, companyId: string) => {
+    if (!user) return;
+    
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ company_id: companyId })
+      .eq('id', userId);
+    
+    if (error) throw error;
+    
+    setAllUserProfiles(prev => prev.map(profile => 
+      profile.id === userId ? { ...profile, companyId, updatedAt: new Date() } : profile
+    ));
+  };
+
+  // Migration functions
+  const migrateLocalData = async () => {
+    // Implementation for migrating local data
+    console.log('Migrating local data...');
+  };
+
+  const exportLocalData = () => {
+    return JSON.stringify({
+      customers,
+      invoices,
+      settings,
+      workers,
+      workerShifts,
+      workerPayments,
+      oilTrades,
+      expenses,
+      seasons,
+      companies,
+      userProfile,
+    });
   };
 
   const importLocalData = async (data: string) => {
@@ -877,31 +1141,37 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
   };
 
   const getStatistics = (): MillStatistics => {
-    const totalOilProduced = invoices.reduce((sum, invoice) => sum + invoice.oilAmount, 0);
-    const totalCashRevenue = invoices.reduce((sum, invoice) => sum + invoice.total.cash, 0);
+    const seasonCustomers = getSeasonFilteredData(customers);
+    const seasonInvoices = getSeasonFilteredData(invoices);
+    const seasonOilTrades = getSeasonFilteredData(oilTrades);
+    const seasonExpenses = getSeasonFilteredData(expenses);
+    const seasonWorkerPayments = getSeasonFilteredData(workerPayments);
     
-    const oilTraded = oilTrades.reduce((sum, trade) => {
+    const totalOilProduced = seasonInvoices.reduce((sum, invoice) => sum + invoice.oilAmount, 0);
+    const totalCashRevenue = seasonInvoices.reduce((sum, invoice) => sum + invoice.total.cash, 0);
+    
+    const oilTraded = seasonOilTrades.reduce((sum, trade) => {
       return trade.type === 'buy' 
         ? sum + trade.amount 
         : sum - trade.amount;
     }, 0);
     
-    const oilReturnedToCustomers = invoices.reduce((sum, invoice) => sum + invoice.total.oil, 0);
+    const oilReturnedToCustomers = seasonInvoices.reduce((sum, invoice) => sum + invoice.total.oil, 0);
     const currentOilStock = totalOilProduced + oilTraded - oilReturnedToCustomers;
     
-    const cashFromTrades = oilTrades.reduce((sum, trade) => {
+    const cashFromTrades = seasonOilTrades.reduce((sum, trade) => {
       return trade.type === 'sell' 
         ? sum + trade.total 
         : sum - trade.total;
     }, 0);
     
-    const totalExpensesAmount = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-    const workerPaymentsTotal = workerPayments.reduce((sum, payment) => sum + payment.amount, 0);
+    const totalExpensesAmount = seasonExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+    const workerPaymentsTotal = seasonWorkerPayments.reduce((sum, payment) => sum + payment.amount, 0);
     
     const currentCash = totalCashRevenue + cashFromTrades - totalExpensesAmount - workerPaymentsTotal;
     
     return {
-      totalCustomers: customers.length,
+      totalCustomers: seasonCustomers.length,
       totalOilProduced,
       totalRevenue: totalCashRevenue + cashFromTrades,
       currentCash,
@@ -911,33 +1181,50 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
   };
 
   const value = {
-    customers,
+    // Filtered data by current season
+    customers: getSeasonFilteredData(customers),
     addCustomer,
     updateCustomerStatus,
     removeCustomerFromQueue,
-    invoices,
+    invoices: getSeasonFilteredData(invoices),
     addInvoice,
     settings,
     updateSettings,
-    workers,
+    workers: getSeasonFilteredData(workers),
     addWorker,
     updateWorker,
     removeWorker,
-    workerShifts,
+    workerShifts: getSeasonFilteredData(workerShifts),
     addWorkerShift,
     updateWorkerShift,
     removeWorkerShift,
-    workerPayments,
+    workerPayments: getSeasonFilteredData(workerPayments),
     addWorkerPayment,
     removeWorkerPayment,
-    oilTrades,
+    oilTrades: getSeasonFilteredData(oilTrades),
     addOilTrade,
     removeOilTrade,
-    expenses,
+    expenses: getSeasonFilteredData(expenses),
     addExpense,
     removeExpense,
     getStatistics,
     isLoading,
+    
+    // Multi-tenant data
+    currentSeason,
+    seasons,
+    companies,
+    userProfile,
+    allUserProfiles,
+    
+    // Multi-tenant functions
+    addSeason,
+    updateSeason,
+    setActiveSeason,
+    addCompany,
+    updateCompany,
+    updateUserRole,
+    assignUserToCompany,
     migrateLocalData,
     exportLocalData,
     importLocalData,
@@ -945,3 +1232,6 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
 
   return <SupabaseMillContext.Provider value={value}>{children}</SupabaseMillContext.Provider>;
 };
+
+// Re-export for compatibility
+export const useMillContext = useSupabaseMillContext;

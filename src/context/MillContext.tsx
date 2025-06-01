@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { Customer, Invoice, MillSettings, Worker, WorkerShift, WorkerPayment, OilTrade, Expense, MillStatistics } from '@/types';
+import { Customer, Invoice, MillSettings, Worker, WorkerShift, WorkerPayment, OilTrade, Expense, MillStatistics, Season, Company, UserProfile } from '@/types';
+import { useAuth } from '@/hooks/useAuth';
 
 interface MillContextType {
   customers: Customer[];
@@ -35,6 +36,26 @@ interface MillContextType {
   removeExpense: (id: string) => void;
   
   getStatistics: () => MillStatistics;
+  
+  // New properties for multi-tenant support
+  currentSeason: Season | null;
+  seasons: Season[];
+  companies: Company[];
+  userProfile: UserProfile | null;
+  
+  // Season management
+  addSeason: (season: Omit<Season, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  updateSeason: (id: string, updates: Partial<Season>) => void;
+  setActiveSeason: (seasonId: string) => void;
+  
+  // Company management (admin only)
+  addCompany: (company: Omit<Company, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  updateCompany: (id: string, updates: Partial<Company>) => void;
+  
+  // User management (admin only)
+  allUserProfiles: UserProfile[];
+  updateUserRole: (userId: string, role: "admin" | "normal") => void;
+  assignUserToCompany: (userId: string, companyId: string) => void;
 }
 
 const defaultSettings: MillSettings = {
@@ -59,126 +80,179 @@ export const useMillContext = () => {
 };
 
 export const MillProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // Existing state
-  const [customers, setCustomers] = useState<Customer[]>(() => {
-    const savedCustomers = localStorage.getItem('millCustomers');
-    return savedCustomers 
-      ? JSON.parse(savedCustomers).map((customer: any) => ({
-          ...customer,
-          createdAt: new Date(customer.createdAt)
-        }))
-      : [];
-  });
+  // Basic state
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [settings, setSettings] = useState<MillSettings>(defaultSettings);
+  const [workers, setWorkers] = useState<Worker[]>([]);
+  const [workerShifts, setWorkerShifts] = useState<WorkerShift[]>([]);
+  const [workerPayments, setWorkerPayments] = useState<WorkerPayment[]>([]);
+  const [oilTrades, setOilTrades] = useState<OilTrade[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   
-  const [invoices, setInvoices] = useState<Invoice[]>(() => {
-    const savedInvoices = localStorage.getItem('millInvoices');
-    return savedInvoices 
-      ? JSON.parse(savedInvoices).map((invoice: any) => ({
-          ...invoice,
-          date: new Date(invoice.date)
-        }))
-      : [];
-  });
-  
-  const [settings, setSettings] = useState<MillSettings>(() => {
-    const savedSettings = localStorage.getItem('millSettings');
-    return savedSettings ? JSON.parse(savedSettings) : defaultSettings;
-  });
+  // Multi-tenant state
+  const [currentSeason, setCurrentSeason] = useState<Season | null>(null);
+  const [seasons, setSeasons] = useState<Season[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [allUserProfiles, setAllUserProfiles] = useState<UserProfile[]>([]);
 
-  // New state
-  const [workers, setWorkers] = useState<Worker[]>(() => {
-    const savedWorkers = localStorage.getItem('millWorkers');
-    return savedWorkers 
-      ? JSON.parse(savedWorkers).map((worker: any) => ({
-          ...worker,
-          createdAt: new Date(worker.createdAt)
-        }))
-      : [];
-  });
-  
-  const [workerShifts, setWorkerShifts] = useState<WorkerShift[]>(() => {
-    const savedShifts = localStorage.getItem('millWorkerShifts');
-    return savedShifts 
-      ? JSON.parse(savedShifts).map((shift: any) => ({
-          ...shift,
-          date: new Date(shift.date)
-        }))
-      : [];
-  });
-  
-  const [workerPayments, setWorkerPayments] = useState<WorkerPayment[]>(() => {
-    const savedPayments = localStorage.getItem('millWorkerPayments');
-    return savedPayments 
-      ? JSON.parse(savedPayments).map((payment: any) => ({
-          ...payment,
-          date: new Date(payment.date)
-        }))
-      : [];
-  });
-  
-  const [oilTrades, setOilTrades] = useState<OilTrade[]>(() => {
-    const savedTrades = localStorage.getItem('millOilTrades');
-    return savedTrades 
-      ? JSON.parse(savedTrades).map((trade: any) => ({
-          ...trade,
-          date: new Date(trade.date)
-        }))
-      : [];
-  });
-  
-  const [expenses, setExpenses] = useState<Expense[]>(() => {
-    const savedExpenses = localStorage.getItem('millExpenses');
-    return savedExpenses 
-      ? JSON.parse(savedExpenses).map((expense: any) => ({
-          ...expense,
-          date: new Date(expense.date)
-        }))
-      : [];
-  });
-
-  // Existing useEffect hooks
+  // Load data from localStorage on mount
   useEffect(() => {
-    localStorage.setItem('millCustomers', JSON.stringify(customers));
-  }, [customers]);
+    loadDataFromStorage();
+  }, []);
 
+  // Save data to localStorage whenever state changes
   useEffect(() => {
-    localStorage.setItem('millInvoices', JSON.stringify(invoices));
-  }, [invoices]);
+    saveDataToStorage();
+  }, [customers, invoices, settings, workers, workerShifts, workerPayments, oilTrades, expenses, seasons, companies, userProfile]);
 
-  useEffect(() => {
-    localStorage.setItem('millSettings', JSON.stringify(settings));
-  }, [settings]);
+  const loadDataFromStorage = () => {
+    try {
+      const storedCustomers = localStorage.getItem('millCustomers');
+      const storedInvoices = localStorage.getItem('millInvoices');
+      const storedSettings = localStorage.getItem('millSettings');
+      const storedWorkers = localStorage.getItem('millWorkers');
+      const storedWorkerShifts = localStorage.getItem('millWorkerShifts');
+      const storedWorkerPayments = localStorage.getItem('millWorkerPayments');
+      const storedOilTrades = localStorage.getItem('millOilTrades');
+      const storedExpenses = localStorage.getItem('millExpenses');
+      const storedSeasons = localStorage.getItem('millSeasons');
+      const storedCompanies = localStorage.getItem('millCompanies');
+      const storedUserProfile = localStorage.getItem('millUserProfile');
 
-  // New useEffect hooks
-  useEffect(() => {
-    localStorage.setItem('millWorkers', JSON.stringify(workers));
-  }, [workers]);
+      if (storedCustomers) {
+        const parsedCustomers = JSON.parse(storedCustomers);
+        setCustomers(parsedCustomers.map((c: any) => ({
+          ...c,
+          createdAt: new Date(c.createdAt)
+        })));
+      }
 
-  useEffect(() => {
-    localStorage.setItem('millWorkerShifts', JSON.stringify(workerShifts));
-  }, [workerShifts]);
+      if (storedInvoices) {
+        const parsedInvoices = JSON.parse(storedInvoices);
+        setInvoices(parsedInvoices.map((i: any) => ({
+          ...i,
+          date: new Date(i.date)
+        })));
+      }
 
-  useEffect(() => {
-    localStorage.setItem('millWorkerPayments', JSON.stringify(workerPayments));
-  }, [workerPayments]);
+      if (storedSettings) {
+        setSettings(JSON.parse(storedSettings));
+      }
 
-  useEffect(() => {
-    localStorage.setItem('millOilTrades', JSON.stringify(oilTrades));
-  }, [oilTrades]);
+      if (storedWorkers) {
+        const parsedWorkers = JSON.parse(storedWorkers);
+        setWorkers(parsedWorkers.map((w: any) => ({
+          ...w,
+          createdAt: new Date(w.createdAt)
+        })));
+      }
 
-  useEffect(() => {
-    localStorage.setItem('millExpenses', JSON.stringify(expenses));
-  }, [expenses]);
+      if (storedWorkerShifts) {
+        const parsedShifts = JSON.parse(storedWorkerShifts);
+        setWorkerShifts(parsedShifts.map((s: any) => ({
+          ...s,
+          date: new Date(s.date)
+        })));
+      }
 
-  // Existing functions
+      if (storedWorkerPayments) {
+        const parsedPayments = JSON.parse(storedWorkerPayments);
+        setWorkerPayments(parsedPayments.map((p: any) => ({
+          ...p,
+          date: new Date(p.date)
+        })));
+      }
+
+      if (storedOilTrades) {
+        const parsedTrades = JSON.parse(storedOilTrades);
+        setOilTrades(parsedTrades.map((t: any) => ({
+          ...t,
+          date: new Date(t.date)
+        })));
+      }
+
+      if (storedExpenses) {
+        const parsedExpenses = JSON.parse(storedExpenses);
+        setExpenses(parsedExpenses.map((e: any) => ({
+          ...e,
+          date: new Date(e.date)
+        })));
+      }
+
+      if (storedSeasons) {
+        const parsedSeasons = JSON.parse(storedSeasons);
+        const seasonsWithDates = parsedSeasons.map((s: any) => ({
+          ...s,
+          createdAt: new Date(s.createdAt),
+          updatedAt: new Date(s.updatedAt)
+        }));
+        setSeasons(seasonsWithDates);
+        
+        // Set current season to the active one
+        const activeSeason = seasonsWithDates.find((s: Season) => s.isActive);
+        if (activeSeason) {
+          setCurrentSeason(activeSeason);
+        }
+      }
+
+      if (storedCompanies) {
+        const parsedCompanies = JSON.parse(storedCompanies);
+        setCompanies(parsedCompanies.map((c: any) => ({
+          ...c,
+          createdAt: new Date(c.createdAt),
+          updatedAt: new Date(c.updatedAt)
+        })));
+      }
+
+      if (storedUserProfile) {
+        const parsedProfile = JSON.parse(storedUserProfile);
+        setUserProfile({
+          ...parsedProfile,
+          createdAt: new Date(parsedProfile.createdAt),
+          updatedAt: new Date(parsedProfile.updatedAt)
+        });
+      }
+    } catch (error) {
+      console.error('Error loading data from storage:', error);
+    }
+  };
+
+  const saveDataToStorage = () => {
+    try {
+      localStorage.setItem('millCustomers', JSON.stringify(customers));
+      localStorage.setItem('millInvoices', JSON.stringify(invoices));
+      localStorage.setItem('millSettings', JSON.stringify(settings));
+      localStorage.setItem('millWorkers', JSON.stringify(workers));
+      localStorage.setItem('millWorkerShifts', JSON.stringify(workerShifts));
+      localStorage.setItem('millWorkerPayments', JSON.stringify(workerPayments));
+      localStorage.setItem('millOilTrades', JSON.stringify(oilTrades));
+      localStorage.setItem('millExpenses', JSON.stringify(expenses));
+      localStorage.setItem('millSeasons', JSON.stringify(seasons));
+      localStorage.setItem('millCompanies', JSON.stringify(companies));
+      localStorage.setItem('millUserProfile', JSON.stringify(userProfile));
+    } catch (error) {
+      console.error('Error saving data to storage:', error);
+    }
+  };
+
+  // Filter data by current season
+  const getSeasonFilteredData = <T extends { seasonId?: string }>(data: T[]): T[] => {
+    if (!currentSeason) return data;
+    return data.filter(item => item.seasonId === currentSeason.id);
+  };
+
+  // Customer functions
   const addCustomer = (customer: Omit<Customer, 'id' | 'createdAt' | 'status'>) => {
     const newCustomer: Customer = {
       ...customer,
-      id: `customer-${Date.now()}`,
+      id: Math.random().toString(36).substr(2, 9),
       createdAt: new Date(),
-      status: "pending",
+      status: 'pending',
+      seasonId: currentSeason?.id,
     };
-    setCustomers(prev => [...prev, newCustomer]);
+    setCustomers(prev => [newCustomer, ...prev]);
   };
 
   const updateCustomerStatus = (id: string, status: "pending" | "completed") => {
@@ -193,151 +267,225 @@ export const MillProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setCustomers(prev => prev.filter(customer => customer.id !== id));
   };
 
+  // Invoice functions
   const addInvoice = (invoice: Omit<Invoice, 'id' | 'date'>) => {
     const newInvoice: Invoice = {
       ...invoice,
-      id: `invoice-${Date.now()}`,
+      id: Math.random().toString(36).substr(2, 9),
       date: new Date(),
+      seasonId: currentSeason?.id,
     };
-    setInvoices(prev => [...prev, newInvoice]);
+    setInvoices(prev => [newInvoice, ...prev]);
   };
 
+  // Settings functions
   const updateSettings = (newSettings: Partial<MillSettings>) => {
     setSettings(prev => ({ ...prev, ...newSettings }));
   };
 
-  // New functions
+  // Worker functions
   const addWorker = (worker: Omit<Worker, 'id' | 'createdAt'>) => {
     const newWorker: Worker = {
       ...worker,
-      id: `worker-${Date.now()}`,
+      id: Math.random().toString(36).substr(2, 9),
       createdAt: new Date(),
+      seasonId: currentSeason?.id,
     };
-    setWorkers(prev => [...prev, newWorker]);
+    setWorkers(prev => [newWorker, ...prev]);
   };
 
   const updateWorker = (id: string, updates: Partial<Worker>) => {
-    let updatedWorker: Worker | undefined;
+    const updatedWorker = workers.find(w => w.id === id);
+    if (!updatedWorker) return {} as Worker;
     
-    setWorkers(prev => 
-      prev.map(worker => {
-        if (worker.id === id) {
-          updatedWorker = { ...worker, ...updates };
-          return updatedWorker;
-        }
-        return worker;
-      })
-    );
-    
-    return updatedWorker!;
+    const newWorker = { ...updatedWorker, ...updates };
+    setWorkers(prev => prev.map(worker => worker.id === id ? newWorker : worker));
+    return newWorker;
   };
 
   const removeWorker = (id: string) => {
     setWorkers(prev => prev.filter(worker => worker.id !== id));
+    // Also remove related shifts and payments
+    setWorkerShifts(prev => prev.filter(shift => shift.workerId !== id));
+    setWorkerPayments(prev => prev.filter(payment => payment.workerId !== id));
   };
 
+  // Worker shift functions
   const addWorkerShift = (shift: Omit<WorkerShift, 'id'>) => {
     const newShift: WorkerShift = {
       ...shift,
-      id: `shift-${Date.now()}`,
+      id: Math.random().toString(36).substr(2, 9),
+      seasonId: currentSeason?.id,
     };
-    setWorkerShifts(prev => [...prev, newShift]);
+    setWorkerShifts(prev => [newShift, ...prev]);
   };
 
   const updateWorkerShift = (id: string, updates: Partial<WorkerShift>) => {
-    let updatedShift: WorkerShift | undefined;
+    const updatedShift = workerShifts.find(s => s.id === id);
+    if (!updatedShift) return {} as WorkerShift;
     
-    setWorkerShifts(prev => 
-      prev.map(shift => {
-        if (shift.id === id) {
-          updatedShift = { ...shift, ...updates };
-          return updatedShift;
-        }
-        return shift;
-      })
-    );
-    
-    return updatedShift!;
+    const newShift = { ...updatedShift, ...updates };
+    setWorkerShifts(prev => prev.map(shift => shift.id === id ? newShift : shift));
+    return newShift;
   };
 
   const removeWorkerShift = (id: string) => {
     setWorkerShifts(prev => prev.filter(shift => shift.id !== id));
   };
 
+  // Worker payment functions
   const addWorkerPayment = (payment: Omit<WorkerPayment, 'id'>) => {
     const newPayment: WorkerPayment = {
       ...payment,
-      id: `payment-${Date.now()}`,
+      id: Math.random().toString(36).substr(2, 9),
+      seasonId: currentSeason?.id,
     };
-    setWorkerPayments(prev => [...prev, newPayment]);
+    setWorkerPayments(prev => [newPayment, ...prev]);
   };
 
   const removeWorkerPayment = (id: string) => {
     setWorkerPayments(prev => prev.filter(payment => payment.id !== id));
   };
 
+  // Oil trade functions
   const addOilTrade = (trade: Omit<OilTrade, 'id' | 'date' | 'total'>) => {
-    const total = trade.amount * trade.price;
-    
     const newTrade: OilTrade = {
       ...trade,
-      id: `trade-${Date.now()}`,
+      id: Math.random().toString(36).substr(2, 9),
       date: new Date(),
-      total,
+      total: trade.amount * trade.price,
+      seasonId: currentSeason?.id,
     };
-    setOilTrades(prev => [...prev, newTrade]);
+    setOilTrades(prev => [newTrade, ...prev]);
   };
 
   const removeOilTrade = (id: string) => {
     setOilTrades(prev => prev.filter(trade => trade.id !== id));
   };
 
+  // Expense functions
   const addExpense = (expense: Omit<Expense, 'id' | 'date'>) => {
     const newExpense: Expense = {
       ...expense,
-      id: `expense-${Date.now()}`,
+      id: Math.random().toString(36).substr(2, 9),
       date: new Date(),
+      seasonId: currentSeason?.id,
     };
-    setExpenses(prev => [...prev, newExpense]);
+    setExpenses(prev => [newExpense, ...prev]);
   };
 
   const removeExpense = (id: string) => {
     setExpenses(prev => prev.filter(expense => expense.id !== id));
   };
 
-  // Statistics calculation
+  // Season functions
+  const addSeason = (season: Omit<Season, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const newSeason: Season = {
+      ...season,
+      id: Math.random().toString(36).substr(2, 9),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    
+    // If this is the first season or marked as active, make it current
+    if (seasons.length === 0 || season.isActive) {
+      // Deactivate other seasons
+      setSeasons(prev => prev.map(s => ({ ...s, isActive: false })));
+      setCurrentSeason(newSeason);
+    }
+    
+    setSeasons(prev => [newSeason, ...prev]);
+  };
+
+  const updateSeason = (id: string, updates: Partial<Season>) => {
+    setSeasons(prev => prev.map(season => 
+      season.id === id ? { ...season, ...updates, updatedAt: new Date() } : season
+    ));
+    
+    if (updates.isActive && currentSeason?.id !== id) {
+      const updatedSeason = seasons.find(s => s.id === id);
+      if (updatedSeason) {
+        setCurrentSeason({ ...updatedSeason, ...updates });
+      }
+    }
+  };
+
+  const setActiveSeason = (seasonId: string) => {
+    setSeasons(prev => prev.map(season => ({
+      ...season,
+      isActive: season.id === seasonId,
+      updatedAt: new Date()
+    })));
+    
+    const activeSeason = seasons.find(s => s.id === seasonId);
+    if (activeSeason) {
+      setCurrentSeason({ ...activeSeason, isActive: true });
+    }
+  };
+
+  // Company functions
+  const addCompany = (company: Omit<Company, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const newCompany: Company = {
+      ...company,
+      id: Math.random().toString(36).substr(2, 9),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    setCompanies(prev => [newCompany, ...prev]);
+  };
+
+  const updateCompany = (id: string, updates: Partial<Company>) => {
+    setCompanies(prev => prev.map(company => 
+      company.id === id ? { ...company, ...updates, updatedAt: new Date() } : company
+    ));
+  };
+
+  // User management functions
+  const updateUserRole = (userId: string, role: "admin" | "normal") => {
+    setAllUserProfiles(prev => prev.map(profile => 
+      profile.id === userId ? { ...profile, role, updatedAt: new Date() } : profile
+    ));
+  };
+
+  const assignUserToCompany = (userId: string, companyId: string) => {
+    setAllUserProfiles(prev => prev.map(profile => 
+      profile.id === userId ? { ...profile, companyId, updatedAt: new Date() } : profile
+    ));
+  };
+
+  // Statistics
   const getStatistics = (): MillStatistics => {
-    // Calculate total oil produced
-    const totalOilProduced = invoices.reduce((sum, invoice) => sum + invoice.oilAmount, 0);
+    const seasonCustomers = getSeasonFilteredData(customers);
+    const seasonInvoices = getSeasonFilteredData(invoices);
+    const seasonOilTrades = getSeasonFilteredData(oilTrades);
+    const seasonExpenses = getSeasonFilteredData(expenses);
+    const seasonWorkerPayments = getSeasonFilteredData(workerPayments);
     
-    // Calculate total cash revenue
-    const totalCashRevenue = invoices.reduce((sum, invoice) => sum + invoice.total.cash, 0);
+    const totalOilProduced = seasonInvoices.reduce((sum, invoice) => sum + invoice.oilAmount, 0);
+    const totalCashRevenue = seasonInvoices.reduce((sum, invoice) => sum + invoice.total.cash, 0);
     
-    // Calculate oil stock based on trades
-    const oilTraded = oilTrades.reduce((sum, trade) => {
+    const oilTraded = seasonOilTrades.reduce((sum, trade) => {
       return trade.type === 'buy' 
         ? sum + trade.amount 
         : sum - trade.amount;
     }, 0);
     
-    // Calculate current oil stock (produced + purchased - sold - returned to customers)
-    const oilReturnedToCustomers = invoices.reduce((sum, invoice) => sum + invoice.total.oil, 0);
+    const oilReturnedToCustomers = seasonInvoices.reduce((sum, invoice) => sum + invoice.total.oil, 0);
     const currentOilStock = totalOilProduced + oilTraded - oilReturnedToCustomers;
     
-    // Calculate cash balance
-    const cashFromTrades = oilTrades.reduce((sum, trade) => {
+    const cashFromTrades = seasonOilTrades.reduce((sum, trade) => {
       return trade.type === 'sell' 
         ? sum + trade.total 
         : sum - trade.total;
     }, 0);
     
-    const totalExpensesAmount = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-    const workerPaymentsTotal = workerPayments.reduce((sum, payment) => sum + payment.amount, 0);
+    const totalExpensesAmount = seasonExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+    const workerPaymentsTotal = seasonWorkerPayments.reduce((sum, payment) => sum + payment.amount, 0);
     
     const currentCash = totalCashRevenue + cashFromTrades - totalExpensesAmount - workerPaymentsTotal;
     
     return {
-      totalCustomers: customers.length,
+      totalCustomers: seasonCustomers.length,
       totalOilProduced,
       totalRevenue: totalCashRevenue + cashFromTrades,
       currentCash,
@@ -347,35 +495,51 @@ export const MillProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const value = {
-    // Existing values
-    customers,
+    // Filtered data by current season
+    customers: getSeasonFilteredData(customers),
+    invoices: getSeasonFilteredData(invoices),
+    workers: getSeasonFilteredData(workers),
+    workerShifts: getSeasonFilteredData(workerShifts),
+    workerPayments: getSeasonFilteredData(workerPayments),
+    oilTrades: getSeasonFilteredData(oilTrades),
+    expenses: getSeasonFilteredData(expenses),
+    
+    // Functions
     addCustomer,
     updateCustomerStatus,
     removeCustomerFromQueue,
-    invoices,
     addInvoice,
     settings,
     updateSettings,
-    
-    // New values
-    workers,
     addWorker,
     updateWorker,
     removeWorker,
-    workerShifts,
     addWorkerShift,
     updateWorkerShift,
     removeWorkerShift,
-    workerPayments,
     addWorkerPayment,
     removeWorkerPayment,
-    oilTrades,
     addOilTrade,
     removeOilTrade,
-    expenses,
     addExpense,
     removeExpense,
     getStatistics,
+    
+    // Multi-tenant data
+    currentSeason,
+    seasons,
+    companies,
+    userProfile,
+    allUserProfiles,
+    
+    // Multi-tenant functions
+    addSeason,
+    updateSeason,
+    setActiveSeason,
+    addCompany,
+    updateCompany,
+    updateUserRole,
+    assignUserToCompany,
   };
 
   return <MillContext.Provider value={value}>{children}</MillContext.Provider>;

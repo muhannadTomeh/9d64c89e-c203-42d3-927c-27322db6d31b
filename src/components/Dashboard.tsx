@@ -1,14 +1,18 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
-import { useMillContext } from '@/context/MillContext';
+import { useSupabaseMillContext } from '@/context/SupabaseMillContext';
+
 const Dashboard: React.FC = () => {
   const {
     settings,
     customers,
     invoices,
-    getStatistics
-  } = useMillContext();
+    getStatistics,
+    currentSeason,
+    userProfile
+  } = useSupabaseMillContext();
 
   // Get queue customers (pending status)
   const queueCustomers = customers.filter(c => c.status === 'pending');
@@ -32,16 +36,30 @@ const Dashboard: React.FC = () => {
 
   // Get overall statistics
   const stats = getStatistics();
-  return <div className="space-y-6 font-arabic text-right">
+
+  return (
+    <div className="space-y-6 font-arabic text-right">
       <div className="flex justify-between items-center border-b pb-4 mb-6">
-        <p className="text-olive-600 font-medium">
-          {new Date().toLocaleDateString('ar-EG', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        })}
-        </p>
+        <div className="text-olive-600 font-medium space-y-1">
+          <p>
+            {new Date().toLocaleDateString('ar-EG', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
+          </p>
+          {currentSeason && (
+            <p className="text-sm text-gray-600">
+              الموسم الحالي: {currentSeason.name} ({currentSeason.year})
+            </p>
+          )}
+          {userProfile && (
+            <p className="text-sm text-gray-600">
+              نوع المستخدم: {userProfile.role === 'admin' ? 'مدير' : 'مستخدم عادي'}
+            </p>
+          )}
+        </div>
         <h2 className="text-2xl font-bold text-olive-800">لوحة التحكم</h2>
       </div>
       
@@ -95,28 +113,28 @@ const Dashboard: React.FC = () => {
           <div className="bg-white border-b-2 border-olive-600 p-4">
             <h3 className="text-lg font-bold text-olive-800 text-right">المعلومات الثابتة للموسم الحالي</h3>
           </div>
-          <CardContent className="p-6 space-y-2 -  flex-row-reverse">
-            <div className=" border-b pb-2 flex-row-reverse flex justify-between ">
+          <CardContent className="p-6 space-y-2 flex-row-reverse">
+            <div className="border-b pb-2 flex-row-reverse flex justify-between">
               <span>{settings.oilSellPrice} شيكل/كغم</span>
               <span className="font-semibold">سعر بيع الزيت:</span>
             </div>
-            <div className="flex-row-reverse border-b pb-2  flex justify-between ">
+            <div className="flex-row-reverse border-b pb-2 flex justify-between">
               <span>{settings.oilBuyPrice} شيكل/كغم</span>
               <span className="font-semibold">سعر شراء الزيت:</span>
             </div>
-            <div className="flex justify-between border-b pb-2  flex-row-reverse">
+            <div className="flex justify-between border-b pb-2 flex-row-reverse">
               <span>{settings.oilReturnPercentage}%</span>
               <span className="font-semibold">نسبة الرد:</span>
             </div>
-            <div className="flex justify-between border-b pb-2  flex-row-reverse">
+            <div className="flex justify-between border-b pb-2 flex-row-reverse">
               <span>{settings.cashReturnPrice} شيكل/كغم</span>
               <span className="font-semibold">سعر الرد النقدي:</span>
             </div>
-            <div className="flex justify-between border-b pb-2  flex-row-reverse">
+            <div className="flex justify-between border-b pb-2 flex-row-reverse">
               <span>{settings.tankPrices.plastic} شيكل</span>
               <span className="font-semibold">سعر التنكة البلاستيك:</span>
             </div>
-            <div className="flex justify-between  flex-row-reverse">
+            <div className="flex justify-between flex-row-reverse">
               <span>{settings.tankPrices.metal} شيكل</span>
               <span className="font-semibold">سعر التنكة الحديد:</span>
             </div>
@@ -131,28 +149,28 @@ const Dashboard: React.FC = () => {
           <div className="bg-white border-b-2 border-sand-600 p-4">
             <h3 className="text-lg font-bold text-olive-800 text-right">إحصائيات اليوم</h3>
           </div>
-          <CardContent className="p-6 space-y-2  flex-row-reverse">
-            <div className="flex justify-between border-b pb-2  flex-row-reverse">
+          <CardContent className="p-6 space-y-2 flex-row-reverse">
+            <div className="flex justify-between border-b pb-2 flex-row-reverse">
               <span>{queueCustomers.length}</span>
               <span className="font-semibold">عدد الزبائن في الطابور:</span>
             </div>
-            <div className="flex justify-between border-b pb-2  flex-row-reverse">
+            <div className="flex justify-between border-b pb-2 flex-row-reverse">
               <span>{todayInvoices.length}</span>
               <span className="font-semibold">عدد الفواتير المصدرة اليوم:</span>
             </div>
-            <div className="flex justify-between border-b pb-2  flex-row-reverse">
+            <div className="flex justify-between border-b pb-2 flex-row-reverse">
               <span>{todayOilTotal.toFixed(2)} كغم</span>
               <span className="font-semibold">إجمالي الزيت المعصور اليوم:</span>
             </div>
-            <div className="flex justify-between border-b pb-2  flex-row-reverse">
+            <div className="flex justify-between border-b pb-2 flex-row-reverse">
               <span>{todayOilPaymentTotal.toFixed(2)} كغم</span>
               <span className="font-semibold">إجمالي الرد بالزيت:</span>
             </div>
-            <div className="flex justify-between  flex-row-reverse">
+            <div className="flex justify-between flex-row-reverse">
               <span>{todayCashTotal.toFixed(2)} شيكل</span>
               <span className="font-semibold">إجمالي الرد النقدي:</span>
             </div>
-            <div className="flex justify-between pt-2 border-t mt-2  flex-row-reverse">
+            <div className="flex justify-between pt-2 border-t mt-2 flex-row-reverse">
               <span>{totalCustomersCount}</span>
               <span className="font-semibold">إجمالي عدد الزبائن:</span>
             </div>
@@ -193,6 +211,8 @@ const Dashboard: React.FC = () => {
           <p>تسجيل وتتبع المصاريف اليومية للمعصرة</p>
         </Link>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Dashboard;

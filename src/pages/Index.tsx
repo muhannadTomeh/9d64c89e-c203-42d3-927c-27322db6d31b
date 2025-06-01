@@ -1,18 +1,18 @@
 
 import React from 'react';
 import Dashboard from '@/components/Dashboard';
-import { MillProvider } from '@/context/MillContext';
+import { SupabaseMillProvider } from '@/context/SupabaseMillContext';
 import Layout from '@/components/Layout';
 
 const Index = () => {
   return (
-    <MillProvider>
+    <SupabaseMillProvider>
       <Layout>
         <div className="font-arabic">
           <Dashboard />
         </div>
       </Layout>
-    </MillProvider>
+    </SupabaseMillProvider>
   );
 };
 

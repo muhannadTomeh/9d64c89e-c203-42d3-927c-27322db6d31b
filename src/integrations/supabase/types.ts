@@ -9,6 +9,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      companies: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           bags_count: number
@@ -17,6 +41,7 @@ export type Database = {
           name: string
           notes: string | null
           phone_number: string | null
+          season_id: string | null
           status: Database["public"]["Enums"]["customer_status"]
           user_id: string
         }
@@ -27,6 +52,7 @@ export type Database = {
           name: string
           notes?: string | null
           phone_number?: string | null
+          season_id?: string | null
           status?: Database["public"]["Enums"]["customer_status"]
           user_id: string
         }
@@ -37,10 +63,19 @@ export type Database = {
           name?: string
           notes?: string | null
           phone_number?: string | null
+          season_id?: string | null
           status?: Database["public"]["Enums"]["customer_status"]
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "customers_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       expenses: {
         Row: {
@@ -49,6 +84,7 @@ export type Database = {
           date: string
           id: string
           notes: string | null
+          season_id: string | null
           user_id: string
         }
         Insert: {
@@ -57,6 +93,7 @@ export type Database = {
           date?: string
           id?: string
           notes?: string | null
+          season_id?: string | null
           user_id: string
         }
         Update: {
@@ -65,9 +102,18 @@ export type Database = {
           date?: string
           id?: string
           notes?: string | null
+          season_id?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "expenses_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invoices: {
         Row: {
@@ -80,6 +126,7 @@ export type Database = {
           oil_amount: number
           payment_method: Database["public"]["Enums"]["payment_method"]
           return_amount: Json
+          season_id: string | null
           tanks: Json
           tanks_payment: Json
           total: Json
@@ -95,6 +142,7 @@ export type Database = {
           oil_amount: number
           payment_method: Database["public"]["Enums"]["payment_method"]
           return_amount: Json
+          season_id?: string | null
           tanks?: Json
           tanks_payment: Json
           total: Json
@@ -110,12 +158,21 @@ export type Database = {
           oil_amount?: number
           payment_method?: Database["public"]["Enums"]["payment_method"]
           return_amount?: Json
+          season_id?: string | null
           tanks?: Json
           tanks_payment?: Json
           total?: Json
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "invoices_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       oil_trades: {
         Row: {
@@ -125,6 +182,7 @@ export type Database = {
           notes: string | null
           person_name: string | null
           price: number
+          season_id: string | null
           total: number
           type: Database["public"]["Enums"]["trade_type"]
           user_id: string
@@ -136,6 +194,7 @@ export type Database = {
           notes?: string | null
           person_name?: string | null
           price: number
+          season_id?: string | null
           total: number
           type: Database["public"]["Enums"]["trade_type"]
           user_id: string
@@ -147,11 +206,20 @@ export type Database = {
           notes?: string | null
           person_name?: string | null
           price?: number
+          season_id?: string | null
           total?: number
           type?: Database["public"]["Enums"]["trade_type"]
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "oil_trades_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -170,6 +238,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      seasons: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seasons_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       settings: {
         Row: {
@@ -207,12 +313,51 @@ export type Database = {
         }
         Relationships: []
       }
+      user_profiles: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_profiles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       worker_payments: {
         Row: {
           amount: number
           date: string
           id: string
           notes: string | null
+          season_id: string | null
           user_id: string
           worker_id: string
         }
@@ -221,6 +366,7 @@ export type Database = {
           date?: string
           id?: string
           notes?: string | null
+          season_id?: string | null
           user_id: string
           worker_id: string
         }
@@ -229,10 +375,18 @@ export type Database = {
           date?: string
           id?: string
           notes?: string | null
+          season_id?: string | null
           user_id?: string
           worker_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "worker_payments_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "worker_payments_worker_id_fkey"
             columns: ["worker_id"]
@@ -250,6 +404,7 @@ export type Database = {
           id: string
           is_paid: boolean
           notes: string | null
+          season_id: string | null
           shifts: number | null
           user_id: string
           worker_id: string
@@ -261,6 +416,7 @@ export type Database = {
           id?: string
           is_paid?: boolean
           notes?: string | null
+          season_id?: string | null
           shifts?: number | null
           user_id: string
           worker_id: string
@@ -272,11 +428,19 @@ export type Database = {
           id?: string
           is_paid?: boolean
           notes?: string | null
+          season_id?: string | null
           shifts?: number | null
           user_id?: string
           worker_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "worker_shifts_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "worker_shifts_worker_id_fkey"
             columns: ["worker_id"]
@@ -294,6 +458,7 @@ export type Database = {
           name: string
           notes: string | null
           phone_number: string | null
+          season_id: string | null
           shift_rate: number | null
           type: Database["public"]["Enums"]["worker_type"]
           user_id: string
@@ -305,6 +470,7 @@ export type Database = {
           name: string
           notes?: string | null
           phone_number?: string | null
+          season_id?: string | null
           shift_rate?: number | null
           type: Database["public"]["Enums"]["worker_type"]
           user_id: string
@@ -316,24 +482,40 @@ export type Database = {
           name?: string
           notes?: string | null
           phone_number?: string | null
+          season_id?: string | null
           shift_rate?: number | null
           type?: Database["public"]["Enums"]["worker_type"]
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "workers_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["user_role"]
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       customer_status: "pending" | "completed"
       payment_method: "oil" | "cash" | "mixed"
       tank_type: "plastic" | "metal"
       trade_type: "buy" | "sell"
+      user_role: "admin" | "normal"
       worker_type: "hourly" | "shift"
     }
     CompositeTypes: {
@@ -454,6 +636,7 @@ export const Constants = {
       payment_method: ["oil", "cash", "mixed"],
       tank_type: ["plastic", "metal"],
       trade_type: ["buy", "sell"],
+      user_role: ["admin", "normal"],
       worker_type: ["hourly", "shift"],
     },
   },
