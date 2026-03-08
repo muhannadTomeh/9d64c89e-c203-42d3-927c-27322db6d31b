@@ -430,7 +430,8 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
 
   // Customer functions
   const addCustomer = async (customer: Omit<Customer, 'id' | 'createdAt' | 'status'>) => {
-    if (!user || !currentSeason) return;
+    if (!user) throw new Error('يجب تسجيل الدخول أولاً');
+    if (!currentSeason) throw new Error('لم يتم تحديد الموسم الحالي');
     
     const { data, error } = await supabase
       .from('customers')

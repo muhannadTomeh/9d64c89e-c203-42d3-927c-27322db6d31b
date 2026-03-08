@@ -18,7 +18,7 @@ const QueueManagement: React.FC = () => {
   const [bagsCount, setBagsCount] = useState(0);
   const [notes, setNotes] = useState('');
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (name.trim() === '') {
@@ -31,20 +31,25 @@ const QueueManagement: React.FC = () => {
       return;
     }
     
-    addCustomer({
-      name: name.trim(),
-      phoneNumber: phoneNumber.trim() !== '' ? phoneNumber : undefined,
-      bagsCount,
-      notes: notes.trim() !== '' ? notes : undefined,
-    });
-    
-    // Reset form
-    setName('');
-    setPhoneNumber('');
-    setBagsCount(0);
-    setNotes('');
-    
-    toast.success('تمت إضافة الزبون إلى الطابور');
+    try {
+      await addCustomer({
+        name: name.trim(),
+        phoneNumber: phoneNumber.trim() !== '' ? phoneNumber : undefined,
+        bagsCount,
+        notes: notes.trim() !== '' ? notes : undefined,
+      });
+      
+      // Reset form
+      setName('');
+      setPhoneNumber('');
+      setBagsCount(0);
+      setNotes('');
+      
+      toast.success('تمت إضافة الزبون إلى الطابور');
+    } catch (error) {
+      console.error('Error adding customer:', error);
+      toast.error('حدث خطأ أثناء إضافة الزبون');
+    }
   };
 
   const handleRemoveFromQueue = (customer: Customer) => {
