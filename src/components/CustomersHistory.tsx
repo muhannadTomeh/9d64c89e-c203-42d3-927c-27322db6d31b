@@ -126,7 +126,7 @@ const CustomerInvoiceDetails: React.FC<{ invoice: Invoice }> = ({ invoice }) => 
 };
 
 const CustomersHistory: React.FC = () => {
-  const { invoices } = useMillContext();
+  const { invoices } = useSupabaseMillContext();
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedCustomerId, setExpandedCustomerId] = useState<string | null>(null);
   
