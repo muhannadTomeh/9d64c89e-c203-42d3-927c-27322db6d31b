@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useMillContext } from '@/context/MillContext';
+import { useSupabaseMillContext } from '@/context/SupabaseMillContext';
 import { Invoice } from '@/types';
 import { ChevronDown, ChevronUp, FileText, Phone, User, Calendar, Droplets, Search, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
