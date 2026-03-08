@@ -1,12 +1,12 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase as supabaseClient } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Customer, Invoice, MillSettings, Worker, WorkerShift, WorkerPayment, OilTrade, Expense, MillStatistics, Season, Company, UserProfile } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
-// Type-safe wrapper for supabase queries until types auto-regenerate
-const db = supabase as any;
+// Use untyped reference until auto-generated types refresh with new tables
+const supabase: any = supabaseClient;
 
 interface SupabaseMillContextType {
   customers: Customer[];
