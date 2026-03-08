@@ -237,9 +237,8 @@ export const SupabaseMillProvider: React.FC<{ children: ReactNode }> = ({ childr
     
     setSeasons(mappedSeasons);
     
-    // Set current season to the active one for user's company
-    const activeSeason = mappedSeasons.find(s => s.isActive && 
-      (userProfile?.role === 'admin' || s.companyId === userProfile?.companyId));
+    // Set current season to the active one (don't rely on userProfile which may not be loaded yet)
+    const activeSeason = mappedSeasons.find(s => s.isActive);
     if (activeSeason) {
       setCurrentSeason(activeSeason);
     }
