@@ -10,7 +10,7 @@ import { Customer } from '@/types';
 import { toast } from 'sonner';
 
 const QueueManagement: React.FC = () => {
-  const { customers, addCustomer, updateCustomerStatus, removeCustomerFromQueue } = useMillContext();
+  const { customers, addCustomer, updateCustomerStatus, removeCustomerFromQueue } = useSupabaseMillContext();
   const queuedCustomers = customers.filter(c => c.status === 'pending');
   
   const [name, setName] = useState('');

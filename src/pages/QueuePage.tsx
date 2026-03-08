@@ -1,16 +1,16 @@
 
 import React from 'react';
 import QueueManagement from '@/components/QueueManagement';
-import { MillProvider } from '@/context/MillContext';
+import { SupabaseMillProvider } from '@/context/SupabaseMillContext';
 import Layout from '@/components/Layout';
 
 const QueuePage = () => {
   return (
-    <MillProvider>
+    <SupabaseMillProvider>
       <Layout>
         <QueueManagement />
       </Layout>
-    </MillProvider>
+    </SupabaseMillProvider>
   );
 };
 

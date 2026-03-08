@@ -12,7 +12,7 @@ const CustomersPage = () => {
           <CustomersHistory />
         </div>
       </Layout>
-    </MillProvider>
+    </SupabaseMillProvider>
   );
 };
 
