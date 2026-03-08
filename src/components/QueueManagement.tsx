@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useMillContext } from '@/context/MillContext';
+import { useSupabaseMillContext } from '@/context/SupabaseMillContext';
 import { Customer } from '@/types';
 import { toast } from 'sonner';
 
