@@ -1,18 +1,18 @@
 
 import React from 'react';
 import CustomersHistory from '@/components/CustomersHistory';
-import { MillProvider } from '@/context/MillContext';
+import { SupabaseMillProvider } from '@/context/SupabaseMillContext';
 import Layout from '@/components/Layout';
 
 const CustomersPage = () => {
   return (
-    <MillProvider>
+    <SupabaseMillProvider>
       <Layout>
         <div className="rtl">
           <CustomersHistory />
         </div>
       </Layout>
-    </MillProvider>
+    </SupabaseMillProvider>
   );
 };
 
