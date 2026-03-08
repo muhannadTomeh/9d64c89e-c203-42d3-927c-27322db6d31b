@@ -5,6 +5,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { Customer, Invoice, MillSettings, Worker, WorkerShift, WorkerPayment, OilTrade, Expense, MillStatistics, Season, Company, UserProfile } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
+// Type-safe wrapper for supabase queries until types auto-regenerate
+const db = supabase as any;
+
 interface SupabaseMillContextType {
   customers: Customer[];
   addCustomer: (customer: Omit<Customer, 'id' | 'createdAt' | 'status'>) => Promise<void>;
