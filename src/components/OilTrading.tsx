@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useMillContext } from '@/context/MillContext';
+import { useSupabaseMillContext } from '@/context/SupabaseMillContext';
 import { TradeType } from '@/types';
 import { toast } from 'sonner';
 const OilTrading: React.FC = () => {
@@ -14,7 +14,7 @@ const OilTrading: React.FC = () => {
     oilTrades,
     addOilTrade,
     getStatistics
-  } = useMillContext();
+  } = useSupabaseMillContext();
   const [tradeType, setTradeType] = useState<TradeType>('sell');
   const [amount, setAmount] = useState(0);
   const [price, setPrice] = useState(0);
