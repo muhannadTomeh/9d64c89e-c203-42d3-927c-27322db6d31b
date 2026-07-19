@@ -87,13 +87,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   const UserFooter = () => (
     <div className="mt-4 p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3">
-      <div className="w-10 h-10 rounded-full bg-gold flex items-center justify-center text-emerald-deep font-bold text-lg flex-shrink-0">
-        {userProfile?.full_name?.charAt(0) || 'م'}
-      </div>
-      <div className="text-right flex-1 min-w-0">
-        <p className="text-sm font-bold text-white truncate">
-          {userProfile?.full_name || 'مستخدم'}
-        </p>
+        <div className="w-10 h-10 rounded-full bg-gold flex items-center justify-center text-emerald-deep font-bold text-lg flex-shrink-0">
+          {userProfile?.firstName?.charAt(0) || 'م'}
+        </div>
+        <div className="text-right flex-1 min-w-0">
+          <p className="text-sm font-bold text-white truncate">
+            {[userProfile?.firstName, userProfile?.lastName].filter(Boolean).join(' ') || 'مستخدم'}
+          </p>
         <p className="text-xs text-cream/50">
           {userProfile?.role === 'admin' ? 'مدير النظام' : 'مستخدم'}
         </p>
