@@ -1,16 +1,16 @@
 
 import React from 'react';
 import OilTrading from '@/components/OilTrading';
-import { MillProvider } from '@/context/MillContext';
+import { SupabaseMillProvider } from '@/context/SupabaseMillContext';
 import Layout from '@/components/Layout';
 
 const TradingPage = () => {
   return (
-    <MillProvider>
+    <SupabaseMillProvider>
       <Layout>
         <OilTrading />
       </Layout>
-    </MillProvider>
+    </SupabaseMillProvider>
   );
 };
 
